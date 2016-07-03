@@ -12,6 +12,14 @@
 			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
 		},
 		{
+			"ImportPath": "github.com/bitrise-io/go-utils/cmdex",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/pathutil",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
 			"ImportPath": "github.com/fsnotify/fsnotify",
 			"Comment": "v1.3.1",
 			"Rev": "a8a77c9133d2d6fd8334f3260d06f60e8d80a5fb"
