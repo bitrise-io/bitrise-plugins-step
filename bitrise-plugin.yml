@@ -1,0 +1,8 @@
+name: step
+description: |-
+  Manage Bitrise CLI steps
+trigger:
+executable:
+  osx:
+  linux:
+requirements: []

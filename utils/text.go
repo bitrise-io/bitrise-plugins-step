@@ -7,16 +7,15 @@ import (
 )
 
 // IndentTextWithMaxLength ...
-func IndentTextWithMaxLength(text string, indent int, maxLineCharWidth int) string {
+func IndentTextWithMaxLength(text string, indent string, maxLineCharWidth int) string {
 	formattedText := ""
-	indentStr := strings.Repeat(" ", indent)
-	maxCharPerLine := maxLineCharWidth - indent
+	maxCharPerLine := maxLineCharWidth - len(indent)
 
 	addLine := func(line string) {
 		if formattedText != "" {
 			formattedText = formattedText + "\n"
 		}
-		formattedText = formattedText + indentStr + line
+		formattedText = formattedText + indent + line
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(text))

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bitrise-core/bitrise-plugin-step/models"
+	"github.com/bitrise-core/bitrise-plugin-step/stepman"
 	"github.com/bitrise-core/bitrise-plugin-step/utils"
 	"github.com/bitrise-io/go-utils/cmdex"
 	"github.com/bitrise-io/go-utils/colorstring"
@@ -55,14 +55,14 @@ func init() {
 }
 
 func printStepVersionInfoOutput(jsonOutput string, versionToPrint string) error {
-	var stepVerInfo models.StepVersionModel
+	var stepVerInfo stepman.StepVersionModel
 	if err := json.Unmarshal([]byte(jsonOutput), &stepVerInfo); err != nil {
 		return fmt.Errorf("Failed to parse JSON: %s", err)
 	}
 	fmt.Println(colorstring.Green(stepVerInfo.ID) + " (" + stepVerInfo.Version + ")")
 	fmt.Println()
 	fmt.Println(colorstring.Yellow("Description") + ": ")
-	fmt.Println(utils.IndentTextWithMaxLength(stepVerInfo.Description, 0, 80))
+	fmt.Println(utils.IndentTextWithMaxLength(stepVerInfo.Description, "", 80))
 	if len(stepVerInfo.Inputs) > 0 {
 		fmt.Println()
 		fmt.Println(colorstring.Blue("Inputs:"))
@@ -74,7 +74,7 @@ func printStepVersionInfoOutput(jsonOutput string, versionToPrint string) error 
 			// ValueOptions []string `json:"value_options"`
 			// IsExpand     bool     `json:"is_expand"`
 			fmt.Println(colorstring.Yellow("  Description") + ":")
-			fmt.Println(utils.IndentTextWithMaxLength(input.Description, 2, 80))
+			fmt.Println(utils.IndentTextWithMaxLength(input.Description, "  ", 80))
 		}
 	}
 	fmt.Println()
