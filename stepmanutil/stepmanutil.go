@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
+	"github.com/bitrise-io/stepman/models"
 )
 
 const (
@@ -39,6 +40,24 @@ type StepInfoModel struct {
 // SpecJSONModel ...
 type SpecJSONModel struct {
 	Steps map[string]StepInfoModel `json:"steps"`
+}
+
+// ReadStepCollectionModel ...
+func ReadStepCollectionModel(collectionID string) (models.StepCollectionModel, error) {
+	specJSONPath, err := specJSONPathOfCollection(collectionID)
+	if err != nil {
+		return models.StepCollectionModel{}, fmt.Errorf("Failed to get spec json path: %s", err)
+	}
+
+	file, err := os.Open(specJSONPath)
+	if err != nil {
+		return models.StepCollectionModel{}, fmt.Errorf("Failed to open spec json: %s", err)
+	}
+	var spec models.StepCollectionModel
+	if err := json.NewDecoder(file).Decode(&spec); err != nil {
+		return models.StepCollectionModel{}, fmt.Errorf("Failed to parse spec json: %s", err)
+	}
+	return spec, nil
 }
 
 // ReadStepVersionInfo ...
