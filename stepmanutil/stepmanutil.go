@@ -1,4 +1,4 @@
-package stepman
+package stepmanutil
 
 import (
 	"encoding/json"
@@ -32,7 +32,7 @@ type StepVersionModel struct {
 
 // StepInfoModel ...
 type StepInfoModel struct {
-	LatestVersion string
+	LatestVersion string                      `json:"latest_version_number"`
 	StepVersions  map[string]StepVersionModel `json:"versions"`
 }
 
@@ -41,23 +41,39 @@ type SpecJSONModel struct {
 	Steps map[string]StepInfoModel `json:"steps"`
 }
 
-// ReadStepInfo ...
-func ReadStepInfo(collectionID, stepID, stepVersion string) (StepVersionModel, error) {
+// ReadStepVersionInfo ...
+// If `stepVersion` is empty, the function will return with the latest
+// available version of the step.
+func ReadStepVersionInfo(collectionID, stepID, stepVersion string) (StepVersionModel, string, error) {
 	specJSONPath, err := specJSONPathOfCollection(collectionID)
 	if err != nil {
-		return StepVersionModel{}, fmt.Errorf("Failed to get spec json path: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("Failed to get spec json path: %s", err)
 	}
 
 	file, err := os.Open(specJSONPath)
 	if err != nil {
-		return StepVersionModel{}, fmt.Errorf("Failed to open spec json: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("Failed to open spec json: %s", err)
 	}
 	var spec SpecJSONModel
 	if err := json.NewDecoder(file).Decode(&spec); err != nil {
-		return StepVersionModel{}, fmt.Errorf("Failed to parse spec json: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("Failed to parse spec json: %s", err)
 	}
 
-	return StepVersionModel{}, nil
+	stepInfo, isFound := spec.Steps[stepID]
+	if !isFound {
+		return StepVersionModel{}, "", fmt.Errorf("No Step found for ID: %s", stepID)
+	}
+
+	if stepVersion == "" {
+		stepVersion = stepInfo.LatestVersion
+	}
+
+	stepVersionInfo, isFound := stepInfo.StepVersions[stepVersion]
+	if !isFound {
+		return StepVersionModel{}, "", fmt.Errorf("No Step version found for (ID: %s) (version: %s)", stepID, stepVersion)
+	}
+
+	return stepVersionInfo, stepVersion, nil
 }
 
 func specJSONPathOfCollection(collectionID string) (string, error) {
