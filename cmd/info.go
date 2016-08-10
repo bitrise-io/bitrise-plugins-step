@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bitrise-core/bitrise-plugin-step/stepman"
-	"github.com/bitrise-core/bitrise-plugin-step/utils"
+	"github.com/bitrise-core/bitrise-plugins-step/stepman"
+	"github.com/bitrise-core/bitrise-plugins-step/utils"
 	"github.com/bitrise-io/go-utils/cmdex"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/spf13/cobra"

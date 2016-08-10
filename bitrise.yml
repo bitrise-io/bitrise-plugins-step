@@ -2,16 +2,15 @@ format_version: 1.2.0
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  godep-update:
+  deps-update:
     steps:
     - script:
         inputs:
         - content: |-
             #!/bin/bash
             set -ex
-            go get -t ./...
-            go get -t github.com/stretchr/testify/require
-            gows godep save ./...
+            rm -rf ./vendor
+            GOWS_SYNC_MODE=copy gows glide up
   test:
     steps:
     - script:
@@ -19,4 +18,4 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-            go test ./...
+            gows go test ./...
