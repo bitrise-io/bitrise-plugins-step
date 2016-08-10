@@ -1,0 +1,505 @@
+format_version: 1.0.0
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - BIN_NAME: stepman
+  - GITHUB_RELEASES_URL: https://github.com/bitrise-io/${BIN_NAME}/releases
+  - INTERNAL_DEV_SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
+  - INTERNAL_DEV_SLACK_CHANNEL: bitrise-devs
+  - INTERNAL_DEV_LIFELINE_SLACK_CHANNEL: bitrise-dev-lifeline
+
+trigger_map:
+- pattern: '*'
+  is_pull_request_allowed: true
+  workflow: ci
+
+workflows:
+  # ----------------------------------------------------------------
+  # --- workflows for CI and testing
+  ci:
+    title: Stepman CI
+    description: |-
+      1, Install testing tools
+      2, Run tests
+      3, Announce test result
+    before_run:
+    - _prepare_and_setup
+    - test
+    steps:
+    - slack:
+        title: Slack notifications
+        run_if: .IsCI
+        inputs:
+        - webhook_url: $INTERNAL_DEV_SLACK_WEBHOOK_URL
+        - channel: $INTERNAL_DEV_LIFELINE_SLACK_CHANNEL
+        - from_username: ${BIN_NAME} - CI - OK
+        - from_username_on_error: ${BIN_NAME} - CI - ERROR
+        - message: |-
+            CI was successful on branch: *${BITRISE_GIT_BRANCH}*
+
+            Build URL: ${BITRISE_BUILD_URL}
+        - message_on_error: |-
+            CI FAILED on branch: *${BITRISE_GIT_BRANCH}*
+
+            Build URL: ${BITRISE_BUILD_URL}
+
+  _prepare_and_setup:
+    title: Install required testing tools
+    description: |-
+        1, Install godep
+        2, Install errcheck
+        3, Install golint
+    steps:
+    - script:
+        title: Install required testing tools
+        run_if: .IsCI
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            set -v
+
+            # Install dependencies
+            go get -u github.com/tools/godep
+
+            # Check for unhandled errors
+            go get -u github.com/kisielk/errcheck
+
+            # Go lint
+            go get -u github.com/golang/lint/golint
+
+  test:
+    title: Stepman test
+    description: |-
+      1, Err Check
+      2, Go Lint
+      3, Go Test
+      4, Integration tests
+    steps:
+    - script:
+        title: Print infos for the test
+        inputs:
+        - content: |-
+            set -x
+            go version
+            echo $GO15VENDOREXPERIMENT
+    - script:
+        title: Go list without vendor
+        inputs:
+        - content: |-
+            set -e
+            set -x
+            no_vendor_paths="$(go list ./... | grep -v vendor)"
+            envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+    - script:
+        title: Go Test
+        inputs:
+        - content: go test ./...
+    - script:
+        title: Err check
+        inputs:
+        - content: errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
+    - script:
+        title: Go Lint
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            while read -r line; do
+              echo "-> Linting: $line"
+              golint_out="$(golint $line)"
+              if [[ "${golint_out}" != "" ]] ; then
+                echo "=> Golint issues found:"
+                echo "${golint_out}"
+                exit 1
+              fi
+            done <<< "$GOLIST_WITHOUT_VENDOR"
+    - script:
+        title: Go build
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            set -x
+
+            # build the new stepman
+            current_dir=$(pwd)
+            current_stepman=$current_dir/_tmp/ci-bin
+            go build -o $current_stepman
+
+            envman add --key CURRENT_STEPMAN --value $current_stepman
+    - script:
+        title: Exit code test
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -x
+
+            # default setup - desired exit code: 0
+            $CURRENT_STEPMAN setup --collection https://github.com/bitrise-io/bitrise-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # latest version - desired exit code: 0
+            $CURRENT_STEPMAN step-info --collection https://github.com/bitrise-io/bitrise-steplib.git --id script
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # latest version, json format - desired exit code: 0
+            $CURRENT_STEPMAN step-info --collection https://github.com/bitrise-io/bitrise-steplib.git --id script --format json
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # invalid version -1 - desired exit code: NOT 0
+            $CURRENT_STEPMAN step-info --collection https://github.com/bitrise-io/bitrise-steplib.git --id script --version -1
+            if [ $? -eq 0 ] ; then
+              exit 1
+            fi
+
+            # invalid version -1, json format - desired exit code: NOT 0
+            $CURRENT_STEPMAN step-info --collection https://github.com/bitrise-io/bitrise-steplib.git --id script --version -1 --format json
+            if [ $? -eq 0 ] ; then
+              exit 1
+            fi
+    - script:
+        title: Cleanup test StepLib
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+
+            rm -rf "_tmp/steplib"
+    - git-clone:
+        title: Git clone test StepLib
+        run_if: true
+        inputs:
+        - repository_url: https://github.com/bitrise-io/bitrise-steplib.git
+        - commit: ""
+        - tag: ""
+        - branch: master
+        - pull_request_id: ""
+        - clone_into_dir: _tmp/steplib
+        - auth_ssh_private_key: ""
+        - clone_depth: ""
+    - script:
+        title: Setup test
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -x
+
+            # Cleanup remote StepLib
+            $CURRENT_STEPMAN delete -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Setup remote StepLib
+            $CURRENT_STEPMAN setup -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Cleanup remote StepLib
+            $CURRENT_STEPMAN delete -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            echo
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c _tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Setup local StepLib - deprecated --local flag
+            $CURRENT_STEPMAN setup --local -c _tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            echo
+
+            # Setup local StepLib - deprecated --local flag && file:// prefix
+            $CURRENT_STEPMAN setup --local -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            echo
+
+            # Setup local StepLib - with file:// prefix
+            $CURRENT_STEPMAN setup -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+    - script:
+        title: Update test
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -x
+
+            # Cleanup remote StepLib
+            $CURRENT_STEPMAN delete -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Setup remote StepLib
+            $CURRENT_STEPMAN setup -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Update remote StepLib
+            $CURRENT_STEPMAN update -c https://github.com/bitrise-samples/sample-steplib.git
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            echo
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Setup local StepLib - with file:// prefix
+            $CURRENT_STEPMAN setup -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Update local StepLib - fail - missing file:// prefix
+            $CURRENT_STEPMAN update -c _tmp/steplib
+            if [ $? -eq 0 ] ; then
+              exit 1
+            fi
+
+            echo
+
+            # Update local StepLib - success
+            $CURRENT_STEPMAN update -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+            # Cleanup local StepLib
+            $CURRENT_STEPMAN delete -c file://_tmp/steplib
+            if [ $? -ne 0 ] ; then
+              exit 1
+            fi
+
+  # ----------------------------------------------------------------
+  # --- workflows for Releasing
+  create_release:
+    title: Create Release with auto version bump
+    description: |-
+        Creates new version with auto patch version bump based on last git version tag
+
+        1, Create CHANGELOG and git release
+        2, Export RELEASE_VERSION
+        3, Create binaries
+    after_run:
+    - _export_release_version
+    - create_binaries
+    steps:
+    - script:
+        title: Create CHANGELOG and git release
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+
+            export CI=true
+            releaseman create \
+              --bump-version patch \
+              --set-version-script "bash _scripts/set_version.sh version/version.go"
+
+  create_release_version:
+    title: Create Release version
+    description: |-
+        Creates new version with specified RELEASE_VERSION environment
+
+        1, Create CHANGELOG and git release
+        2, Export RELEASE_VERSION
+        3, Create binaries
+    envs:
+    - RELEASE_VERSION: 0.9.21
+    after_run:
+    - _export_release_version
+    - create_binaries
+    steps:
+    - script:
+        title: Create CHANGELOG and git release
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+
+            export CI=true
+            releaseman create \
+              --version $RELEASE_VERSION \
+              --set-version-script "bash _scripts/set_version.sh version/version.go"
+
+  announce-release:
+    title: Announce Release
+    description: |-
+      Notifying about new version of stepman
+
+      1, Export RELEASE_VERSION
+      2, Send Slack notifications
+    steps:
+    - slack@2.1.0:
+        inputs:
+        - webhook_url: $INTERNAL_DEV_SLACK_WEBHOOK_URL
+        - channel: $INTERNAL_DEV_SLACK_CHANNEL
+        - from_username: ${BIN_NAME}
+        - message: |
+            Release v${RELEASE_VERSION} was just published! :tada:
+
+            You can find it at ${GITHUB_RELEASES_URL}
+        - emoji: ':rocket:'
+
+  _export_release_version:
+    title: Export release version
+    description: |
+        Exports RELEASE_VERSION from ./version/version.go
+    steps:
+    - script:
+        title: Export RELEASE_VERSION
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -e
+
+            RELEASE_VERSION=$(go run _scripts/get_version.go -file ./version/version.go)
+            echo "RELEASE_VERSION: $RELEASE_VERSION"
+
+            envman add --key RELEASE_VERSION --value $RELEASE_VERSION
+
+  create_binaries:
+    title: Create binaries
+    description: |
+        Creates Linux and Darwin binaries
+    steps:
+    - script:
+        title: Create binaries
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -e
+            set -x
+
+            echo
+            echo "Create final binaries"
+            echo "  Build number: $BITRISE_BUILD_NUMBER"
+
+            export ARCH=x86_64
+            export GOARCH=amd64
+
+            # Create Darwin bin
+            export OS=Darwin
+            export GOOS=darwin
+
+            DEPLOY_PATH="_bin/$BIN_NAME-$OS-$ARCH"
+            echo "  Create final Darwin binary at: $DEPLOY_PATH"
+
+            version_package="github.com/bitrise-io/stepman/version"
+
+            go build \
+              -ldflags "-X $version_package.BuildNumber=$BITRISE_BUILD_NUMBER -X $version_package.Commit=$GIT_CLONE_COMMIT_HASH" \
+              -o "$DEPLOY_PATH"
+
+            envman add --key OSX_DEPLOY_PATH --value $DEPLOY_PATH
+            cp $DEPLOY_PATH $BITRISE_DEPLOY_DIR/$BIN_NAME-$OS-$ARCH
+            echo "  Copy final Darwin binary to: $BITRISE_DEPLOY_DIR/$BIN_NAME-$OS-$ARCH"
+
+
+            # Create Linux binary
+            export OS=Linux
+            export GOOS=linux
+
+            DEPLOY_PATH="_bin/$BIN_NAME-$OS-$ARCH"
+            echo "  Create final Linux binary at: $DEPLOY_PATH"
+
+            go build \
+              -ldflags "-X $version_package.BuildNumber=$BITRISE_BUILD_NUMBER -X $version_package.Commit=$GIT_CLONE_COMMIT_HASH" \
+              -o "$DEPLOY_PATH"
+
+            envman add --key LINUX_DEPLOY_PATH --value $DEPLOY_PATH
+            cp $DEPLOY_PATH $BITRISE_DEPLOY_DIR/$BIN_NAME-$OS-$ARCH
+            echo "  Copy final Linux binary to: $BITRISE_DEPLOY_DIR/$BIN_NAME-$OS-$ARCH"
+
+  # ----------------------------------------------------------------
+  # --- workflows for Utility
+
+  regenerate-default-collection:
+    before_run:
+    - delete-stepman-dir
+    envs:
+    - DEFAULT_STEPLIB_GIT: https://github.com/bitrise-io/bitrise-steplib.git
+    steps:
+    - script:
+        title: Setup stepman
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -v
+            set -e
+            stepman setup -c ${DEFAULT_STEPLIB_GIT}
+
+  delete-stepman-dir:
+    steps:
+    - script:
+        title: Delete local stepman dir
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -v
+            set -e
+            rm -rf ~/.stepman
+
+  godeps-update:
+    description: |-
+      Dependenci Update
+
+      Used for updating stepman dependencies with godep
+    steps:
+    - script:
+        title: Dependency update
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            set -v
+
+            go get -u ./...
+            rm -rf ./Godeps
+            godep save ./...

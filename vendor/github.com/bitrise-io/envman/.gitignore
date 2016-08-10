@@ -1,0 +1,5 @@
+_tmp/
+.envstore.yml
+.bitrise
+.bitrise.secrets.yml
+_bin/

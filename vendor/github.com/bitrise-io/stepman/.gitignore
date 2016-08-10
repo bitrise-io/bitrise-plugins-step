@@ -1,0 +1,5 @@
+_temp/
+.bitrise
+.bitrise.secrets.yml
+_bin
+_tmp

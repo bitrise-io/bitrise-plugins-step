@@ -1,11 +1,19 @@
 package: github.com/bitrise-core/bitrise-plugins-step
 import:
+- package: github.com/bitrise-io/envman
+  version: ^1.1.0
+  subpackages:
+  - models
 - package: github.com/bitrise-io/go-utils
   subpackages:
-  - cmdex
   - colorstring
   - fileutil
   - pathutil
+- package: github.com/bitrise-io/stepman
+  version: ^0.9.22
+  subpackages:
+  - models
+  - stepman
 - package: github.com/spf13/cobra
 testImport:
 - package: github.com/stretchr/testify

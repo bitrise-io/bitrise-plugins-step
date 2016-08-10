@@ -15,11 +15,6 @@ func WriteStringToFile(pth string, fileCont string) error {
 	return WriteBytesToFile(pth, []byte(fileCont))
 }
 
-// WriteStringToFileWithPermission ...
-func WriteStringToFileWithPermission(pth string, fileCont string, perm os.FileMode) error {
-	return WriteBytesToFileWithPermission(pth, []byte(fileCont), perm)
-}
-
 // WriteBytesToFileWithPermission ...
 func WriteBytesToFileWithPermission(pth string, fileCont []byte, perm os.FileMode) error {
 	if pth == "" {
@@ -118,21 +113,12 @@ func ReadStringFromFile(pth string) (string, error) {
 	return string(contBytes), nil
 }
 
-// GetFileModeOfFile ...
-//  this is the "permissions" info, which can be passed directly to
-//  functions like WriteBytesToFileWithPermission or os.OpenFile
-func GetFileModeOfFile(pth string) (os.FileMode, error) {
-	finfo, err := os.Lstat(pth)
+// GetFilePermissions ...
+func GetFilePermissions(filePth string) (os.FileMode, error) {
+	info, err := os.Stat(filePth)
 	if err != nil {
 		return 0, err
 	}
-	return finfo.Mode(), nil
-}
-
-// GetFilePermissions ...
-// - alias of: GetFileModeOfFile
-//  this is the "permissions" info, which can be passed directly to
-//  functions like WriteBytesToFileWithPermission or os.OpenFile
-func GetFilePermissions(filePth string) (os.FileMode, error) {
-	return GetFileModeOfFile(filePth)
+	mode := info.Mode()
+	return mode, nil
 }

@@ -10,7 +10,9 @@ workflows:
             #!/bin/bash
             set -ex
             rm -rf ./vendor
-            GOWS_SYNC_MODE=copy gows glide up
+            gows clear
+            GOWS_SYNC_MODE=copy gows glide up --strip-vendor --strip-vcs --delete
+            gows clear
   test:
     steps:
     - script:
