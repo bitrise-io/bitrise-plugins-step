@@ -9,9 +9,12 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
+            go get -u github.com/sgotti/glide-vc
             rm -rf ./vendor
             gows clear
             GOWS_SYNC_MODE=copy gows glide up --strip-vendor --strip-vcs --delete
+            # cleanup vendor
+            glide-vc
             gows clear
   test:
     steps:
