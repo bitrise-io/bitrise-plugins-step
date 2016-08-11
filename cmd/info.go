@@ -73,14 +73,15 @@ var infoCmd = &cobra.Command{
 		}
 
 		stepInfo := models.StepInfoModel{
-			ID:          stepID,
-			Version:     stepVersion,
-			Latest:      latestStepVersion,
-			Description: *step.Description,
-			StepLib:     collectionID,
-			Source:      *step.SourceCodeURL,
-			Inputs:      inputs,
-			Outputs:     outputs,
+			ID:            stepID,
+			Version:       stepVersion,
+			Latest:        latestStepVersion,
+			Description:   *step.Description,
+			StepLib:       collectionID,
+			SourceCodeURL: *step.SourceCodeURL,
+			SupportURL:    *step.SupportURL,
+			Inputs:        inputs,
+			Outputs:       outputs,
 		}
 
 		route, found := stepman.ReadRoute(collectionID)
@@ -136,7 +137,10 @@ func getEnvInfos(envs []envmanModels.EnvironmentItemModel) ([]models.EnvInfoMode
 }
 
 func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
-	fmt.Println(colorstring.Green(stepVersionInfo.ID) + " (" + stepVersionInfo.Version + ")")
+	fmt.Println(colorstring.Green(stepVersionInfo.ID) + "  @" + stepVersionInfo.Version + "  [" + stepVersionInfo.StepLib + "]")
+	fmt.Println()
+	fmt.Println(colorstring.Yellow("Support") + ": " + stepVersionInfo.SupportURL)
+	fmt.Println(colorstring.Yellow("Source") + ": " + stepVersionInfo.SourceCodeURL)
 	fmt.Println()
 	fmt.Println(colorstring.Yellow("Description") + ": ")
 	fmt.Println(utils.IndentTextWithMaxLength(stepVersionInfo.Description, "", 80))
