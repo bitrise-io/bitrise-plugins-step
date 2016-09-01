@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	stepVersion = ""
-	stepYMLPath = ""
+	stepVersion  = ""
+	stepYMLPath  = ""
+	outputFormat = ""
 )
 
 // infoCmd represents the info command
@@ -155,6 +156,7 @@ func init() {
 	RootCmd.AddCommand(infoCmd)
 	infoCmd.Flags().StringVarP(&stepVersion, "version", "v", "", "Version - if not specified will print info about the latest version")
 	infoCmd.Flags().StringVar(&stepYMLPath, "step-yml", "", "step.yml - if specified infos will be printed from the specified step.yml, not from a library")
+	infoCmd.Flags().StringVar(&outputFormat, "output-format", "", `Output format. Default is "rich command line", but can also be "markdown", to generate a standard markdown output instead.`)
 }
 
 func getEnvInfos(envs []envmanModels.EnvironmentItemModel) ([]models.EnvInfoModel, error) {
@@ -183,25 +185,69 @@ func getEnvInfos(envs []envmanModels.EnvironmentItemModel) ([]models.EnvInfoMode
 }
 
 func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
-	fmt.Println(colorstring.Green(stepVersionInfo.ID) + "  @" + stepVersionInfo.Version + "  [" + stepVersionInfo.StepLib + "]")
-	fmt.Println()
-	fmt.Println(colorstring.Yellow("Support") + ": " + stepVersionInfo.SupportURL)
-	fmt.Println(colorstring.Yellow("Source") + ": " + stepVersionInfo.SourceCodeURL)
-	fmt.Println()
-	fmt.Println(colorstring.Yellow("Description") + ": ")
-	fmt.Println(utils.IndentTextWithMaxLength(stepVersionInfo.Description, "", 80))
-	if len(stepVersionInfo.Inputs) > 0 {
-		fmt.Println()
-		fmt.Println(colorstring.Blue("=== Inputs =========="))
-		for _, input := range stepVersionInfo.Inputs {
-			fmt.Println()
-			fmt.Println(colorstring.Green(input.Key) + ":")
+	isMarkdown := (outputFormat == "markdown")
 
-			// DefaultValue string   `json:"default_value"`
-			// ValueOptions []string `json:"value_options"`
-			// IsExpand     bool     `json:"is_expand"`
-			fmt.Println(colorstring.Yellow("  Description") + ":")
-			fmt.Println(utils.IndentTextWithMaxLength(input.Description, "  ", 80))
+	// Step ID, collection, version, ...
+	if isMarkdown {
+		fmt.Println("# " + stepVersionInfo.ID)
+		fmt.Println()
+		fmt.Println("- version: " + stepVersionInfo.Version)
+		fmt.Println("- collection: " + stepVersionInfo.StepLib)
+	} else {
+		fmt.Println(colorstring.Green(stepVersionInfo.ID) + "  @" + stepVersionInfo.Version + "  [" + stepVersionInfo.StepLib + "]")
+		fmt.Println()
+	}
+	// base infos like support & source URL
+	if isMarkdown {
+		fmt.Println()
+		fmt.Println("# Base Infos")
+		fmt.Println()
+		fmt.Println("- Support URL: " + stepVersionInfo.SupportURL)
+		fmt.Println("- Source URL: " + stepVersionInfo.SourceCodeURL)
+	} else {
+		fmt.Println(colorstring.Yellow("Support") + ": " + stepVersionInfo.SupportURL)
+		fmt.Println(colorstring.Yellow("Source") + ": " + stepVersionInfo.SourceCodeURL)
+		fmt.Println()
+	}
+	// description
+	if isMarkdown {
+		fmt.Println()
+		fmt.Println("# Description")
+		fmt.Println()
+		fmt.Println(stepVersionInfo.Description)
+	} else {
+		fmt.Println(colorstring.Yellow("Description") + ": ")
+		fmt.Println(utils.IndentTextWithMaxLength(stepVersionInfo.Description, "", 80))
+	}
+
+	// inputs
+	if len(stepVersionInfo.Inputs) > 0 {
+		if isMarkdown {
+			fmt.Println()
+			fmt.Println("# Inputs")
+		} else {
+			fmt.Println()
+			fmt.Println(colorstring.Blue("=== Inputs =========="))
+		}
+
+		for _, input := range stepVersionInfo.Inputs {
+			if isMarkdown {
+				fmt.Println()
+				fmt.Println("## `" + input.Key + "`")
+				fmt.Println()
+				fmt.Println("### _Description_")
+				fmt.Println()
+				fmt.Println(input.Description)
+			} else {
+				fmt.Println()
+				fmt.Println(colorstring.Green(input.Key) + ":")
+
+				// DefaultValue string   `json:"default_value"`
+				// ValueOptions []string `json:"value_options"`
+				// IsExpand     bool     `json:"is_expand"`
+				fmt.Println(colorstring.Yellow("  Description") + ":")
+				fmt.Println(utils.IndentTextWithMaxLength(input.Description, "  ", 80))
+			}
 		}
 	}
 	fmt.Println()
