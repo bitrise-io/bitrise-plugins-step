@@ -16,6 +16,7 @@ import (
 
 var (
 	stepVersion = ""
+	stepYMLPath = ""
 )
 
 // infoCmd represents the info command
@@ -24,6 +25,12 @@ var infoCmd = &cobra.Command{
 	Short: "Print info about a step",
 	Long:  `Print info about a step`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// from step.yml
+		if len(stepYMLPath) != 0 {
+			return printStepInfoFromStepYML(stepYMLPath)
+		}
+
+		// by Step ID
 		if len(args) < 1 {
 			return errors.New("No step ID specified as a parameter")
 		}
@@ -32,83 +39,122 @@ var infoCmd = &cobra.Command{
 		}
 		stepID := args[0]
 
-		collectionID := "https://github.com/bitrise-io/bitrise-steplib.git"
-		_, stepVersion, err := stepmanutil.ReadStepVersionInfo(collectionID, stepID, stepVersion)
-
-		if err != nil {
-			return fmt.Errorf("Failed to get step info: %s", err)
-		}
-
-		// Check if step exist in collection
-		collection, err := stepmanutil.ReadStepCollectionModel(collectionID)
-		if err != nil {
-			return fmt.Errorf("Failed to read steps spec (spec.json), err: %s", err)
-		}
-
-		step, stepFound := collection.GetStep(stepID, stepVersion)
-		if !stepFound {
-			if stepVersion == "" {
-				return fmt.Errorf("Collection doesn't contain any version of step (id:%s)", stepID)
-			}
-			return fmt.Errorf("Collection doesn't contain step (id:%s) (version:%s)", stepID, stepVersion)
-		}
-
-		latestStepVersion, err := collection.GetLatestStepVersion(stepID)
-		if err != nil {
-			return fmt.Errorf("Failed to get latest version of step (id:%s)", stepID)
-		}
-
-		if stepVersion == "" {
-			stepVersion = latestStepVersion
-		}
-
-		inputs, err := getEnvInfos(step.Inputs)
-		if err != nil {
-			return fmt.Errorf("Failed to get step (id:%s) input infos, err: %s", stepID, err)
-		}
-
-		outputs, err := getEnvInfos(step.Outputs)
-		if err != nil {
-			return fmt.Errorf("Failed to get step (id:%s) output infos, err: %s", stepID, err)
-		}
-
-		stepInfo := models.StepInfoModel{
-			ID:            stepID,
-			Version:       stepVersion,
-			Latest:        latestStepVersion,
-			Description:   *step.Description,
-			StepLib:       collectionID,
-			SourceCodeURL: *step.SourceCodeURL,
-			SupportURL:    *step.SupportURL,
-			Inputs:        inputs,
-			Outputs:       outputs,
-		}
-
-		route, found := stepman.ReadRoute(collectionID)
-		if !found {
-			return fmt.Errorf("No route found for collection: %s", collectionID)
-		}
-		globalStepInfoPth := stepman.GetStepGlobalInfoPath(route, stepID)
-		if globalStepInfoPth != "" {
-			globalInfo, found, err := stepman.ParseGlobalStepInfoYML(globalStepInfoPth)
-			if err != nil {
-				return fmt.Errorf("Failed to get step (path:%s) output infos, err: %s", globalStepInfoPth, err)
-			}
-
-			if found {
-				stepInfo.GlobalInfo = globalInfo
-			}
-		}
-
-		printStepVersionInfoOutput(stepInfo)
-
-		return nil
+		return printStepInfoFromLibrary(stepID)
 	},
+}
+
+func printStepInfoFromStepYML(ymlPth string) error {
+	step, err := stepman.ParseStepYml(ymlPth, false)
+	if err != nil {
+		return fmt.Errorf("Failed to parse step.yml (path: %s), error: %s", ymlPth, err)
+	}
+
+	inputs, err := getEnvInfos(step.Inputs)
+	if err != nil {
+		return fmt.Errorf("Failed to get step input infos, err: %s", err)
+	}
+
+	outputs, err := getEnvInfos(step.Outputs)
+	if err != nil {
+		return fmt.Errorf("Failed to get step output infos, err: %s", err)
+	}
+
+	stepInfo := models.StepInfoModel{
+		ID:            "step.yml:" + ymlPth,
+		Version:       "",
+		Latest:        "",
+		Description:   *step.Description,
+		StepLib:       "",
+		SourceCodeURL: *step.SourceCodeURL,
+		SupportURL:    *step.SupportURL,
+		Inputs:        inputs,
+		Outputs:       outputs,
+	}
+
+	printStepVersionInfoOutput(stepInfo)
+
+	return nil
+}
+
+func printStepInfoFromLibrary(stepID string) error {
+
+	collectionID := "https://github.com/bitrise-io/bitrise-steplib.git"
+	_, stepVersion, err := stepmanutil.ReadStepVersionInfo(collectionID, stepID, stepVersion)
+
+	if err != nil {
+		return fmt.Errorf("Failed to get step info: %s", err)
+	}
+
+	// Check if step exist in collection
+	collection, err := stepmanutil.ReadStepCollectionModel(collectionID)
+	if err != nil {
+		return fmt.Errorf("Failed to read steps spec (spec.json), err: %s", err)
+	}
+
+	step, stepFound := collection.GetStep(stepID, stepVersion)
+	if !stepFound {
+		if stepVersion == "" {
+			return fmt.Errorf("Collection doesn't contain any version of step (id:%s)", stepID)
+		}
+		return fmt.Errorf("Collection doesn't contain step (id:%s) (version:%s)", stepID, stepVersion)
+	}
+
+	latestStepVersion, err := collection.GetLatestStepVersion(stepID)
+	if err != nil {
+		return fmt.Errorf("Failed to get latest version of step (id:%s)", stepID)
+	}
+
+	if stepVersion == "" {
+		stepVersion = latestStepVersion
+	}
+
+	inputs, err := getEnvInfos(step.Inputs)
+	if err != nil {
+		return fmt.Errorf("Failed to get step (id:%s) input infos, err: %s", stepID, err)
+	}
+
+	outputs, err := getEnvInfos(step.Outputs)
+	if err != nil {
+		return fmt.Errorf("Failed to get step (id:%s) output infos, err: %s", stepID, err)
+	}
+
+	stepInfo := models.StepInfoModel{
+		ID:            stepID,
+		Version:       stepVersion,
+		Latest:        latestStepVersion,
+		Description:   *step.Description,
+		StepLib:       collectionID,
+		SourceCodeURL: *step.SourceCodeURL,
+		SupportURL:    *step.SupportURL,
+		Inputs:        inputs,
+		Outputs:       outputs,
+	}
+
+	route, found := stepman.ReadRoute(collectionID)
+	if !found {
+		return fmt.Errorf("No route found for collection: %s", collectionID)
+	}
+	globalStepInfoPth := stepman.GetStepGlobalInfoPath(route, stepID)
+	if globalStepInfoPth != "" {
+		globalInfo, found, err := stepman.ParseGlobalStepInfoYML(globalStepInfoPth)
+		if err != nil {
+			return fmt.Errorf("Failed to get step (path:%s) output infos, err: %s", globalStepInfoPth, err)
+		}
+
+		if found {
+			stepInfo.GlobalInfo = globalInfo
+		}
+	}
+
+	printStepVersionInfoOutput(stepInfo)
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(infoCmd)
 	infoCmd.Flags().StringVarP(&stepVersion, "version", "v", "", "Version - if not specified will print info about the latest version")
+	infoCmd.Flags().StringVar(&stepYMLPath, "step-yml", "", "step.yml - if specified infos will be printed from the specified step.yml, not from a library")
 }
 
 func getEnvInfos(envs []envmanModels.EnvironmentItemModel) ([]models.EnvInfoModel, error) {
