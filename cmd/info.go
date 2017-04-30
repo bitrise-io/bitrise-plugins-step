@@ -137,13 +137,13 @@ func printStepInfoFromLibrary(stepID string) error {
 	}
 	globalStepInfoPth := stepman.GetStepGlobalInfoPath(route, stepID)
 	if globalStepInfoPth != "" {
-		globalInfo, found, err := stepman.ParseGlobalStepInfoYML(globalStepInfoPth)
+		globalInfo, found, err := stepman.ParseStepGroupInfoModel(globalStepInfoPth)
 		if err != nil {
 			return fmt.Errorf("Failed to get step (path:%s) output infos, err: %s", globalStepInfoPth, err)
 		}
 
 		if found {
-			stepInfo.GlobalInfo = globalInfo
+			stepInfo.GroupInfo = globalInfo
 		}
 	}
 
@@ -214,7 +214,7 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 		fmt.Println()
 		fmt.Println("# Description")
 		fmt.Println()
-		fmt.Println(stepVersionInfo.Step.Description)
+		fmt.Println(pointers.String(stepVersionInfo.Step.Description))
 	} else {
 		fmt.Println(colorstring.Yellow("Description") + ": ")
 		fmt.Println(utils.IndentTextWithMaxLength(pointers.String(stepVersionInfo.Step.Description), "", 80))
