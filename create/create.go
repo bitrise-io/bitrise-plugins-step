@@ -120,6 +120,14 @@ func createStep(inventory Inventory) error {
 			TemplatePath: "step.sh.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "step.sh"),
 		},
+		{
+			TemplatePath: "bitrise.yml.gotemplate",
+			FilePath:     filepath.Join(stepDirPth, "bitrise.yml"),
+		},
+		{
+			TemplatePath: "bitrise.secrets.yml.gotemplate",
+			FilePath:     filepath.Join(stepDirPth, ".bitrise.secrets.yml"),
+		},
 	} {
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
 			return errors.Wrap(err, "Failed to write template into file")
