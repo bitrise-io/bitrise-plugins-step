@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ var RootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Println(colorstring.Red("ERROR:"), err)
 		os.Exit(-1)
 	}
 }
