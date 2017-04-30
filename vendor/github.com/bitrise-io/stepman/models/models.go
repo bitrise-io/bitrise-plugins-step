@@ -6,12 +6,6 @@ import (
 	envmanModels "github.com/bitrise-io/envman/models"
 )
 
-// GlobalStepInfoModel ...
-type GlobalStepInfoModel struct {
-	RemovalDate    string `json:"removal_date,omitempty" yaml:"removal_date,omitempty"`
-	DeprecateNotes string `json:"deprecate_notes,omitempty" yaml:"deprecate_notes,omitempty"`
-}
-
 // StepSourceModel ...
 type StepSourceModel struct {
 	Git    string `json:"git,omitempty" yaml:"git,omitempty"`
@@ -26,12 +20,24 @@ type DependencyModel struct {
 
 // BrewDepModel ...
 type BrewDepModel struct {
+	// Name is the package name for Brew
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	// BinName is the binary's name, if it doesn't match the package's name.
+	// Can be used for e.g. calling `which`.
+	// E.g. in case of "AWS CLI" the package is `awscli` and the binary is `aws`.
+	// If BinName is empty Name will be used as BinName too.
+	BinName string `json:"bin_name,omitempty" yaml:"bin_name,omitempty"`
 }
 
 // AptGetDepModel ...
 type AptGetDepModel struct {
+	// Name is the package name for Apt-get
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	// BinName is the binary's name, if it doesn't match the package's name.
+	// Can be used for e.g. calling `which`.
+	// E.g. in case of "AWS CLI" the package is `awscli` and the binary is `aws`.
+	// If BinName is empty Name will be used as BinName too.
+	BinName string `json:"bin_name,omitempty" yaml:"bin_name,omitempty"`
 }
 
 // CheckOnlyDepModel ...
@@ -46,6 +52,23 @@ type DepsModel struct {
 	CheckOnly []CheckOnlyDepModel `json:"check_only,omitempty" yaml:"check_only,omitempty"`
 }
 
+// BashStepToolkitModel ...
+type BashStepToolkitModel struct {
+	EntryFile string `json:"entry_file,omitempty" yaml:"entry_file,omitempty"`
+}
+
+// GoStepToolkitModel ...
+type GoStepToolkitModel struct {
+	// PackageName - required
+	PackageName string `json:"package_name" yaml:"package_name"`
+}
+
+// StepToolkitModel ...
+type StepToolkitModel struct {
+	Bash *BashStepToolkitModel `json:"bash,omitempty" yaml:"bash,omitempty"`
+	Go   *GoStepToolkitModel   `json:"go,omitempty" yaml:"go,omitempty"`
+}
+
 // StepModel ...
 type StepModel struct {
 	Title       *string `json:"title,omitempty" yaml:"title,omitempty"`
@@ -57,14 +80,15 @@ type StepModel struct {
 	SupportURL    *string `json:"support_url,omitempty" yaml:"support_url,omitempty"`
 	// auto-generated at share
 	PublishedAt *time.Time        `json:"published_at,omitempty" yaml:"published_at,omitempty"`
-	Source      StepSourceModel   `json:"source,omitempty" yaml:"source,omitempty"`
+	Source      *StepSourceModel  `json:"source,omitempty" yaml:"source,omitempty"`
 	AssetURLs   map[string]string `json:"asset_urls,omitempty" yaml:"asset_urls,omitempty"`
 	//
 	HostOsTags          []string          `json:"host_os_tags,omitempty" yaml:"host_os_tags,omitempty"`
 	ProjectTypeTags     []string          `json:"project_type_tags,omitempty" yaml:"project_type_tags,omitempty"`
 	TypeTags            []string          `json:"type_tags,omitempty" yaml:"type_tags,omitempty"`
 	Dependencies        []DependencyModel `json:"dependencies,omitempty" yaml:"dependencies,omitempty"`
-	Deps                DepsModel         `json:"deps,omitempty" yaml:"deps,omitempty"`
+	Toolkit             *StepToolkitModel `json:"toolkit,omitempty" yaml:"toolkit,omitempty"`
+	Deps                *DepsModel        `json:"deps,omitempty" yaml:"deps,omitempty"`
 	IsRequiresAdminUser *bool             `json:"is_requires_admin_user,omitempty" yaml:"is_requires_admin_user,omitempty"`
 	// IsAlwaysRun : if true then this step will always run,
 	//  even if a previous step fails.
@@ -74,10 +98,18 @@ type StepModel struct {
 	//  steps will run which are marked with IsAlwaysRun.
 	IsSkippable *bool `json:"is_skippable,omitempty" yaml:"is_skippable,omitempty"`
 	// RunIf : only run the step if the template example evaluates to true
-	RunIf *string `json:"run_if,omitempty" yaml:"run_if,omitempty"`
+	RunIf   *string `json:"run_if,omitempty" yaml:"run_if,omitempty"`
+	Timeout *int    `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 	//
 	Inputs  []envmanModels.EnvironmentItemModel `json:"inputs,omitempty" yaml:"inputs,omitempty"`
 	Outputs []envmanModels.EnvironmentItemModel `json:"outputs,omitempty" yaml:"outputs,omitempty"`
+}
+
+// StepVersionModel ...
+type StepVersionModel struct {
+	Step                   StepModel
+	Version                string
+	LatestAvailableVersion string
 }
 
 // StepGroupInfoModel ...
@@ -92,6 +124,15 @@ type StepGroupModel struct {
 	Info                StepGroupInfoModel   `json:"info,omitempty" yaml:"info,omitempty"`
 	LatestVersionNumber string               `json:"latest_version_number,omitempty" yaml:"latest_version_number,omitempty"`
 	Versions            map[string]StepModel `json:"versions,omitempty" yaml:"versions,omitempty"`
+}
+
+// LatestVersion ...
+func (stepGroup StepGroupModel) LatestVersion() (StepModel, bool) {
+	step, found := stepGroup.Versions[stepGroup.LatestVersionNumber]
+	if !found {
+		return StepModel{}, false
+	}
+	return step, true
 }
 
 // StepHash ...
@@ -125,18 +166,13 @@ type EnvInfoModel struct {
 
 // StepInfoModel ...
 type StepInfoModel struct {
-	ID            string              `json:"step_id,omitempty" yaml:"step_id,omitempty"`
-	Title         string              `json:"step_title,omitempty" yaml:"step_title,omitempty"`
-	Version       string              `json:"step_version,omitempty" yaml:"step_version,omitempty"`
-	Latest        string              `json:"latest_version,omitempty" yaml:"latest_version,omitempty"`
-	Description   string              `json:"description,omitempty" yaml:"description,omitempty"`
-	Source        string              `json:"source,omitempty" yaml:"source,omitempty"`
-	StepLib       string              `json:"steplib,omitempty" yaml:"steplib,omitempty"`
-	SupportURL    string              `json:"support_url,omitempty" yaml:"support_url,omitempty"`
-	SourceCodeURL string              `json:"source_code_url,omitempty" yaml:"source_code_url,omitempty"`
-	Inputs        []EnvInfoModel      `json:"inputs,omitempty" yaml:"inputs,omitempty"`
-	Outputs       []EnvInfoModel      `json:"outputs,omitempty" yaml:"outputs,omitempty"`
-	GlobalInfo    GlobalStepInfoModel `json:"global_info,omitempty" yaml:"global_info,omitempty"`
+	Library       string             `json:"library,omitempty" yaml:"library,omitempty"`
+	ID            string             `json:"id,omitempty" yaml:"id,omitempty"`
+	Version       string             `json:"version,omitempty" yaml:"version,omitempty"`
+	LatestVersion string             `json:"latest_version,omitempty" yaml:"latest_version,omitempty"`
+	GroupInfo     StepGroupInfoModel `json:"info,omitempty" yaml:"info,omitempty"`
+	Step          StepModel          `json:"step,omitempty" yaml:"step,omitempty"`
+	DefinitionPth string             `json:"definition_pth,omitempty" yaml:"definition_pth,omitempty"`
 }
 
 // StepListModel ...
@@ -145,12 +181,8 @@ type StepListModel struct {
 	Steps   []string `json:"steps,omitempty" yaml:"steps,omitempty"`
 }
 
-// StepLibURIModel ...
-type StepLibURIModel struct {
-	URI string `json:"uri,omitempty" yaml:"uri,omitempty"`
-}
-
-// StepLibURIsModel ...
-type StepLibURIsModel struct {
-	StepLibURIs []StepLibURIModel `json:"steplibs,omitempty" yaml:"steplibs,omitempty"`
+// SteplibInfoModel ...
+type SteplibInfoModel struct {
+	URI      string `json:"uri,omitempty" yaml:"uri,omitempty"`
+	SpecPath string `json:"spec_path,omitempty" yaml:"spec_path,omitempty"`
 }
