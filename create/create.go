@@ -110,6 +110,10 @@ func createStep(inventory Inventory) error {
 			TemplatePath: "LICENSE.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "LICENSE"),
 		},
+		{
+			TemplatePath: "gitignore.gotemplate",
+			FilePath:     filepath.Join(stepDirPth, ".gitignore"),
+		},
 	} {
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
 			return errors.Wrap(err, "Failed to write template into file")
