@@ -1,21 +1,31 @@
-format_version: 1.2.0
+format_version: 2
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
   deps-update:
+    title: Godeps update
+    description: |
+      Used for updating bitrise dependencies with godep
     steps:
     - script:
+        title: Dependency update
         inputs:
-        - content: |-
+        - content: |
             #!/bin/bash
             set -ex
-            go get -u github.com/sgotti/glide-vc
+            go get -u -v github.com/tools/godep
+
+            rm -rf ./Godeps
             rm -rf ./vendor
-            gows clear
-            GOWS_SYNC_MODE=copy gows glide up --strip-vendor --strip-vcs --delete
-            # cleanup vendor
-            glide-vc
-            gows clear
+
+            go get -t -d ./...
+            go get github.com/inconshreveable/mousetrap
+            go get github.com/Sirupsen/logrus
+            go get golang.org/x/sys/unix
+            go get github.com/davecgh/go-spew/spew
+            go get github.com/pmezard/go-difflib/difflib
+            go get gopkg.in/yaml.v2
+            godep save ./...
   test:
     steps:
     - script:
@@ -23,4 +33,4 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-            gows go test ./...
+            go test ./...

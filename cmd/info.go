@@ -6,6 +6,7 @@ import (
 
 	envmanModels "github.com/bitrise-io/envman/models"
 	"github.com/bitrise-io/go-utils/colorstring"
+	"github.com/bitrise-io/go-utils/pointers"
 	"github.com/bitrise-io/stepman/models"
 	"github.com/bitrise-io/stepman/stepman"
 
@@ -45,31 +46,33 @@ var infoCmd = &cobra.Command{
 }
 
 func printStepInfoFromStepYML(ymlPth string) error {
-	step, err := stepman.ParseStepYml(ymlPth, false)
+	step, err := stepman.ParseStepDefinition(ymlPth, false)
 	if err != nil {
 		return fmt.Errorf("Failed to parse step.yml (path: %s), error: %s", ymlPth, err)
 	}
 
-	inputs, err := getEnvInfos(step.Inputs)
-	if err != nil {
-		return fmt.Errorf("Failed to get step input infos, err: %s", err)
-	}
+	// inputs, err := getEnvInfos(step.Inputs)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to get step input infos, err: %s", err)
+	// }
 
-	outputs, err := getEnvInfos(step.Outputs)
-	if err != nil {
-		return fmt.Errorf("Failed to get step output infos, err: %s", err)
-	}
+	// outputs, err := getEnvInfos(step.Outputs)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to get step output infos, err: %s", err)
+	// }
 
 	stepInfo := models.StepInfoModel{
+		Library:       "",
 		ID:            "step.yml:" + ymlPth,
 		Version:       "",
-		Latest:        "",
-		Description:   *step.Description,
-		StepLib:       "",
-		SourceCodeURL: *step.SourceCodeURL,
-		SupportURL:    *step.SupportURL,
-		Inputs:        inputs,
-		Outputs:       outputs,
+		LatestVersion: "",
+		Step: models.StepModel{
+			Description:   step.Description,
+			SourceCodeURL: step.SourceCodeURL,
+			SupportURL:    step.SupportURL,
+			Inputs:        step.Inputs,
+			Outputs:       step.Outputs,
+		},
 	}
 
 	printStepVersionInfoOutput(stepInfo)
@@ -78,7 +81,6 @@ func printStepInfoFromStepYML(ymlPth string) error {
 }
 
 func printStepInfoFromLibrary(stepID string) error {
-
 	collectionID := "https://github.com/bitrise-io/bitrise-steplib.git"
 	_, stepVersion, err := stepmanutil.ReadStepVersionInfo(collectionID, stepID, stepVersion)
 
@@ -86,18 +88,14 @@ func printStepInfoFromLibrary(stepID string) error {
 		return fmt.Errorf("Failed to get step info: %s", err)
 	}
 
-	// Check if step exist in collection
-	collection, err := stepmanutil.ReadStepCollectionModel(collectionID)
+	step, err := stepman.ReadStepVersionInfo(collectionID, stepID, stepVersion)
 	if err != nil {
-		return fmt.Errorf("Failed to read steps spec (spec.json), err: %s", err)
+		return fmt.Errorf("Failed to read step version info: %s", err)
 	}
 
-	step, stepFound := collection.GetStep(stepID, stepVersion)
-	if !stepFound {
-		if stepVersion == "" {
-			return fmt.Errorf("Collection doesn't contain any version of step (id:%s)", stepID)
-		}
-		return fmt.Errorf("Collection doesn't contain step (id:%s) (version:%s)", stepID, stepVersion)
+	collection, err := stepman.ReadStepSpec(collectionID)
+	if err != nil {
+		return fmt.Errorf("Failed to read step lib (%s), error: %s", collectionID, err)
 	}
 
 	latestStepVersion, err := collection.GetLatestStepVersion(stepID)
@@ -109,26 +107,28 @@ func printStepInfoFromLibrary(stepID string) error {
 		stepVersion = latestStepVersion
 	}
 
-	inputs, err := getEnvInfos(step.Inputs)
-	if err != nil {
-		return fmt.Errorf("Failed to get step (id:%s) input infos, err: %s", stepID, err)
-	}
+	// inputs, err := getEnvInfos(step.Inputs)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to get step (id:%s) input infos, err: %s", stepID, err)
+	// }
 
-	outputs, err := getEnvInfos(step.Outputs)
-	if err != nil {
-		return fmt.Errorf("Failed to get step (id:%s) output infos, err: %s", stepID, err)
-	}
+	// outputs, err := getEnvInfos(step.Outputs)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to get step (id:%s) output infos, err: %s", stepID, err)
+	// }
 
 	stepInfo := models.StepInfoModel{
+		Library:       collectionID,
 		ID:            stepID,
 		Version:       stepVersion,
-		Latest:        latestStepVersion,
-		Description:   *step.Description,
-		StepLib:       collectionID,
-		SourceCodeURL: *step.SourceCodeURL,
-		SupportURL:    *step.SupportURL,
-		Inputs:        inputs,
-		Outputs:       outputs,
+		LatestVersion: latestStepVersion,
+		Step: models.StepModel{
+			Description:   step.Step.Description,
+			SourceCodeURL: step.Step.SourceCodeURL,
+			SupportURL:    step.Step.SupportURL,
+			Inputs:        step.Step.Inputs,
+			Outputs:       step.Step.Outputs,
+		},
 	}
 
 	route, found := stepman.ReadRoute(collectionID)
@@ -192,9 +192,9 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 		fmt.Println("# " + stepVersionInfo.ID)
 		fmt.Println()
 		fmt.Println("- version: " + stepVersionInfo.Version)
-		fmt.Println("- collection: " + stepVersionInfo.StepLib)
+		fmt.Println("- collection: " + stepVersionInfo.Library)
 	} else {
-		fmt.Println(colorstring.Green(stepVersionInfo.ID) + "  @" + stepVersionInfo.Version + "  [" + stepVersionInfo.StepLib + "]")
+		fmt.Println(colorstring.Green(stepVersionInfo.ID) + "  @" + stepVersionInfo.Version + "  [" + stepVersionInfo.Library + "]")
 		fmt.Println()
 	}
 	// base infos like support & source URL
@@ -202,11 +202,11 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 		fmt.Println()
 		fmt.Println("# Base Infos")
 		fmt.Println()
-		fmt.Println("- Support URL: " + stepVersionInfo.SupportURL)
-		fmt.Println("- Source URL: " + stepVersionInfo.SourceCodeURL)
+		fmt.Println("- Support URL: " + pointers.String(stepVersionInfo.Step.SupportURL))
+		fmt.Println("- Source URL: " + pointers.String(stepVersionInfo.Step.SourceCodeURL))
 	} else {
-		fmt.Println(colorstring.Yellow("Support") + ": " + stepVersionInfo.SupportURL)
-		fmt.Println(colorstring.Yellow("Source") + ": " + stepVersionInfo.SourceCodeURL)
+		fmt.Println(colorstring.Yellow("Support") + ": " + pointers.String(stepVersionInfo.Step.SupportURL))
+		fmt.Println(colorstring.Yellow("Source") + ": " + pointers.String(stepVersionInfo.Step.SourceCodeURL))
 		fmt.Println()
 	}
 	// description
@@ -214,14 +214,14 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 		fmt.Println()
 		fmt.Println("# Description")
 		fmt.Println()
-		fmt.Println(stepVersionInfo.Description)
+		fmt.Println(stepVersionInfo.Step.Description)
 	} else {
 		fmt.Println(colorstring.Yellow("Description") + ": ")
-		fmt.Println(utils.IndentTextWithMaxLength(stepVersionInfo.Description, "", 80))
+		fmt.Println(utils.IndentTextWithMaxLength(pointers.String(stepVersionInfo.Step.Description), "", 80))
 	}
 
 	// inputs
-	if len(stepVersionInfo.Inputs) > 0 {
+	if len(stepVersionInfo.Step.Inputs) > 0 {
 		if isMarkdown {
 			fmt.Println()
 			fmt.Println("# Inputs")
@@ -230,7 +230,12 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 			fmt.Println(colorstring.Blue("=== Inputs =========="))
 		}
 
-		for _, input := range stepVersionInfo.Inputs {
+		inputs, err := getEnvInfos(stepVersionInfo.Step.Inputs)
+		if err != nil {
+			return fmt.Errorf("Failed to get step input infos, err: %s", err)
+		}
+
+		for _, input := range inputs {
 			if isMarkdown {
 				fmt.Println()
 				fmt.Println("## `" + input.Key + "`")
