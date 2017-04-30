@@ -1,4 +1,5 @@
-title: "{{ .Title }}"
+title: |-
+  {{ .Title }}
 summary: |
   {{ .Summary }}
 description: |
