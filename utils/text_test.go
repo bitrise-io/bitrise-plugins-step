@@ -69,7 +69,7 @@ second line`, output)
 	{
 		input := `first line
 second line`
-		output := IndentTextWithMaxLength(input, 2, 80)
+		output := IndentTextWithMaxLength(input, "  ", 80)
 		require.Equal(t, `  first line
   second line`, output)
 	}
