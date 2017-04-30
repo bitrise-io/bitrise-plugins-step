@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/bitrise-io/go-utils/colorstring"
@@ -23,6 +24,8 @@ type Inventory struct {
 	ID          string
 	Summary     string
 	Description string
+	//
+	Year int
 }
 
 // Step ...
@@ -54,6 +57,8 @@ func Step() error {
 		ID:          id,
 		Summary:     summary,
 		Description: description,
+		//
+		Year: time.Now().Year(),
 	})
 }
 
@@ -100,6 +105,10 @@ func createStep(inventory Inventory) error {
 		{
 			TemplatePath: "README.md.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "README.md"),
+		},
+		{
+			TemplatePath: "LICENSE.gotemplate",
+			FilePath:     filepath.Join(stepDirPth, "LICENSE"),
 		},
 	} {
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
