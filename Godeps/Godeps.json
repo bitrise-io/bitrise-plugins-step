@@ -7,6 +7,14 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/GeertJohan/go.rice",
+			"Rev": "c02ca9a983da5807ddf7d796784928f5be4afd09"
+		},
+		{
+			"ImportPath": "github.com/GeertJohan/go.rice/embedded",
+			"Rev": "c02ca9a983da5807ddf7d796784928f5be4afd09"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.11.5-12-g10f801e",
 			"Rev": "10f801ebc38b33738c9d17d50860f484a0988ff5"
@@ -57,12 +65,20 @@
 			"Rev": "c8163959178ae89a3829ce02e485eef6b2befd22"
 		},
 		{
+			"ImportPath": "github.com/bitrise-io/go-utils/templateutil",
+			"Rev": "c8163959178ae89a3829ce02e485eef6b2befd22"
+		},
+		{
 			"ImportPath": "github.com/bitrise-io/go-utils/urlutil",
 			"Rev": "c8163959178ae89a3829ce02e485eef6b2befd22"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/versions",
 			"Rev": "c8163959178ae89a3829ce02e485eef6b2befd22"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/goinp/goinp",
+			"Rev": "a602d207503f909271ecd91a17abd9ac919e273c"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/stepman/models",
@@ -75,6 +91,10 @@
 			"Rev": "7faf6f683b1cdd05f6f31dd97cf8676a990bbf51"
 		},
 		{
+			"ImportPath": "github.com/daaku/go.zipexe",
+			"Rev": "a5fe2436ffcb3236e175e5149162b41cd28bd27d"
+		},
+		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Comment": "v1.1.0",
 			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -82,6 +102,15 @@
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "9d302b58e975387d0b4d9be876622c86cefe64be"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-4-gff09b13",
+			"Rev": "ff09b135c25aae272398c51a07235b90a75aa4f0"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
