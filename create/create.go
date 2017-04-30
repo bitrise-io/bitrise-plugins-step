@@ -79,8 +79,6 @@ func printInfoLine(s string, args ...string) {
 }
 
 func createStep(inventory Inventory) error {
-	fmt.Printf("Step Params: %#v\n", inventory)
-
 	// create directory
 	stepDirPth, err := pathutil.AbsPath(inventory.ID)
 	if err != nil {
@@ -117,6 +115,10 @@ func createStep(inventory Inventory) error {
 		{
 			TemplatePath: "step.yml.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "step.yml"),
+		},
+		{
+			TemplatePath: "step.sh.gotemplate",
+			FilePath:     filepath.Join(stepDirPth, "step.sh"),
 		},
 	} {
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
