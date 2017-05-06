@@ -1,20 +1,54 @@
-format_version: 2
+format_version: "2"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-
+app:
+  envs:
+  - BIN_NAME: bitrise-plugins-step
 workflows:
-  install:
+  create-release:
     steps:
     - script:
+        title: create Linux and macOS (Darwin) bins, with version infos
         inputs:
         - content: |-
             #!/bin/bash
-            set -ex
-            go get github.com/GeertJohan/go.rice/rice
-            cd ./create
-            rice embed-go
-            cd -
-            go install
-            rm ./create/rice-box.go
+            set -e
+
+            echo
+            echo "Create release binaries"
+            echo " * Build number: $BITRISE_BUILD_NUMBER"
+            echo
+
+            set -x
+
+            git_commit_hash="$(git rev-parse HEAD)"
+            version_package="github.com/bitrise-core/bitrise-plugins-step/version"
+
+            export ARCH=x86_64
+            export GOARCH=amd64
+
+
+            # Create Darwin bin
+            export OS=Darwin
+            export GOOS=darwin
+            binary_path="_bin/${BIN_NAME}-${OS}-${ARCH}"
+
+            go build \
+              -ldflags "-X ${version_package}.BuildNumber=${BITRISE_BUILD_NUMBER} -X ${version_package}.Commit=${git_commit_hash}" \
+              -o "${binary_path}"
+
+            cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
+
+
+            # Create Linux binary
+            export OS=Linux
+            export GOOS=linux
+            binary_path="_bin/${BIN_NAME}-${OS}-${ARCH}"
+
+            go build \
+              -ldflags "-X ${version_package}.BuildNumber=${BITRISE_BUILD_NUMBER} -X ${version_package}.Commit=${git_commit_hash}" \
+              -o "${binary_path}"
+
+            cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
   deps-update:
     title: Godeps update
     description: |
@@ -39,9 +73,24 @@ workflows:
             go get github.com/pmezard/go-difflib/difflib
             go get gopkg.in/yaml.v2
             godep save ./...
+  install:
+    steps:
+    - script:
+        title: Embed templates and go install
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            go get github.com/GeertJohan/go.rice/rice
+            cd ./create
+            rice embed-go
+            cd -
+            go install
+            rm ./create/rice-box.go
   test:
     steps:
     - script:
+        title: go test
         inputs:
         - content: |-
             #!/bin/bash
