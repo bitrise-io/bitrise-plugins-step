@@ -19,11 +19,12 @@ import (
 
 // Inventory ...
 type Inventory struct {
-	Author      string
-	Title       string
-	ID          string
-	Summary     string
-	Description string
+	Author         string
+	Title          string
+	ID             string
+	Summary        string
+	Description    string
+	PrimaryTypeTag string
 	//
 	Year int
 }
@@ -51,12 +52,24 @@ func Step() error {
 		return errors.Wrap(err, "Failed to determine description")
 	}
 
+	fmt.Println()
+	primaryTypeTag, err := goinp.SelectFromStrings("What's the primary category of this Step?", []string{
+		"access-control", "artifact-info",
+		"installer", "deploy",
+		"utility", "dependency", "code-sign",
+		"build", "test", "notification",
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to determine primary category")
+	}
+
 	return createStep(Inventory{
-		Author:      author,
-		Title:       title,
-		ID:          id,
-		Summary:     summary,
-		Description: description,
+		Author:         author,
+		Title:          title,
+		ID:             id,
+		Summary:        summary,
+		Description:    description,
+		PrimaryTypeTag: primaryTypeTag,
 		//
 		Year: time.Now().Year(),
 	})
@@ -77,15 +90,21 @@ func printInfoLine(s string, args ...string) {
 	parts := append([]string{colorstring.Yellow(s)}, args...)
 	fmt.Println(strings.Join(parts, " "))
 }
+func printSuccessLine(s string, args ...string) {
+	parts := append([]string{colorstring.Green(s)}, args...)
+	fmt.Println(strings.Join(parts, " "))
+}
 
 func createStep(inventory Inventory) error {
+	fmt.Println()
+
 	// create directory
 	stepDirPth, err := pathutil.AbsPath(inventory.ID)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get absolute path for step directory")
 	}
 
-	printInfoLine("Creating Step directory:", stepDirPth)
+	printInfoLine("Creating Step directory at:", stepDirPth)
 	if exists, err := pathutil.IsPathExists(stepDirPth); err != nil {
 		return errors.Wrap(err, "Failed to check whether step dir already exists")
 	} else if exists {
@@ -132,7 +151,16 @@ func createStep(inventory Inventory) error {
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
 			return errors.Wrap(err, "Failed to write template into file")
 		}
+		fmt.Println(" *", colorstring.Green("[OK]"), "created:", aTemplate.FilePath)
 	}
+
+	fmt.Println()
+	printSuccessLine("Step is ready!")
+	fmt.Println()
+	fmt.Println("You can find it at:", stepDirPth)
+	fmt.Println()
+	fmt.Println("TIP:", colorstring.Yellow("cd"), "into", colorstring.Yellow(stepDirPth), "and run",
+		colorstring.Yellow("bitrise run test"), "for a quick test drive!")
 
 	return nil
 }
