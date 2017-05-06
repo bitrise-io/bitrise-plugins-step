@@ -1,14 +1,13 @@
-format_version: 2
+format_version: "2"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-
 app:
   envs:
   - BIN_NAME: bitrise-plugins-step
-
 workflows:
   create-release:
     steps:
     - script:
+        title: create Linux and macOS (Darwin) bins, with version infos
         inputs:
         - content: |-
             #!/bin/bash
@@ -50,19 +49,6 @@ workflows:
               -o "${binary_path}"
 
             cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
-  install:
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            go get github.com/GeertJohan/go.rice/rice
-            cd ./create
-            rice embed-go
-            cd -
-            go install
-            rm ./create/rice-box.go
   deps-update:
     title: Godeps update
     description: |
@@ -87,9 +73,24 @@ workflows:
             go get github.com/pmezard/go-difflib/difflib
             go get gopkg.in/yaml.v2
             godep save ./...
+  install:
+    steps:
+    - script:
+        title: Embed templates and go install
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            go get github.com/GeertJohan/go.rice/rice
+            cd ./create
+            rice embed-go
+            cd -
+            go install
+            rm ./create/rice-box.go
   test:
     steps:
     - script:
+        title: go test
         inputs:
         - content: |-
             #!/bin/bash
