@@ -53,6 +53,8 @@ func Step() error {
 	}
 
 	fmt.Println()
+	// available primary categories / type_tags:
+	// https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md#step-grouping-convention
 	primaryTypeTag, err := goinp.SelectFromStrings("What's the primary category of this Step?", []string{
 		"access-control", "artifact-info",
 		"installer", "deploy",
