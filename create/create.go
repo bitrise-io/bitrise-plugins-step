@@ -96,9 +96,7 @@ func generateIDFromString(s string) string {
 		}
 		return r
 	}, s)
-	s = strings.Trim(s, "-")
-
-	return "bitrise-step-" + s
+	return strings.Trim(s, "-")
 }
 
 func printInfoLine(s string, args ...string) {
@@ -114,7 +112,7 @@ func createStep(inventory Inventory) error {
 	fmt.Println()
 
 	// create directory
-	stepDirPth, err := pathutil.AbsPath(inventory.ID)
+	stepDirPth, err := pathutil.AbsPath("bitrise-step-" + inventory.ID)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get absolute path for step directory")
 	}
