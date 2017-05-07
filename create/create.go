@@ -18,6 +18,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	toolkitTypeBash = "bash"
+	toolkitTypeGo   = "go"
+)
+
 // Inventory ...
 type Inventory struct {
 	Author         string
@@ -26,6 +31,8 @@ type Inventory struct {
 	Summary        string
 	Description    string
 	PrimaryTypeTag string
+	//
+	ToolkitType string
 	//
 	Year int
 }
@@ -75,6 +82,8 @@ func Step() error {
 		Summary:        summary,
 		Description:    description,
 		PrimaryTypeTag: primaryTypeTag,
+		//
+		ToolkitType: toolkitTypeBash,
 		//
 		Year: time.Now().Year(),
 	})
@@ -129,8 +138,9 @@ func createStep(inventory Inventory) error {
 
 	// save files from templates
 	for _, aTemplate := range []struct {
-		TemplatePath string
-		FilePath     string
+		TemplatePath  string
+		FilePath      string
+		ToolkitFilter string
 	}{
 		{
 			TemplatePath: "README.md.gotemplate",
@@ -149,10 +159,6 @@ func createStep(inventory Inventory) error {
 			FilePath:     filepath.Join(stepDirPth, "step.yml"),
 		},
 		{
-			TemplatePath: "step.sh.gotemplate",
-			FilePath:     filepath.Join(stepDirPth, "step.sh"),
-		},
-		{
 			TemplatePath: "bitrise.yml.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "bitrise.yml"),
 		},
@@ -160,7 +166,24 @@ func createStep(inventory Inventory) error {
 			TemplatePath: "bitrise.secrets.yml.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, ".bitrise.secrets.yml"),
 		},
+		// Toolkit: Bash
+		{
+			TemplatePath:  "bash/step.sh.gotemplate",
+			FilePath:      filepath.Join(stepDirPth, "step.sh"),
+			ToolkitFilter: toolkitTypeBash,
+		},
+		// Toolkit: Go
+		{
+			TemplatePath:  "go/main.go.gotemplate",
+			FilePath:      filepath.Join(stepDirPth, "main.go"),
+			ToolkitFilter: toolkitTypeGo,
+		},
 	} {
+		if aTemplate.ToolkitFilter != "" && aTemplate.ToolkitFilter != inventory.ToolkitType {
+			// skip
+			continue
+		}
+
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
 			return errors.Wrap(err, "Failed to write template into file")
 		}
