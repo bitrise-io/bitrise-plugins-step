@@ -168,6 +168,12 @@ func createStep(inventory Inventory) error {
 	}
 
 	fmt.Println()
+	fmt.Println(colorstring.Yellow("Initializing git repository in step directory ..."))
+	if err := initGitRepoAtPath(stepDirPth); err != nil {
+		return errors.Wrap(err, "Failed to initialize git repository in step directory")
+	}
+
+	fmt.Println()
 	printSuccessLine("Step is ready!")
 	fmt.Println()
 	fmt.Println("You can find it at:", stepDirPth)
@@ -175,6 +181,14 @@ func createStep(inventory Inventory) error {
 	fmt.Println("TIP:", colorstring.Yellow("cd"), "into", colorstring.Yellow(stepDirPth), "and run",
 		colorstring.Yellow("bitrise run test"), "for a quick test drive!")
 
+	return nil
+}
+
+func initGitRepoAtPath(dirPth string) error {
+	cmdLog, err := command.New("git", "init").SetDir(dirPth).RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "Failed to git init in directory (%s). Output: %s", dirPth, cmdLog)
+	}
 	return nil
 }
 
