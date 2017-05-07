@@ -57,6 +57,10 @@ deps:
   - name: git
   - name: wget
 
+toolkit:
+  bash:
+    entry_file: step.sh
+
 inputs:
   - example_step_input: Default Value - you can leave this empty if you want to
     opts:

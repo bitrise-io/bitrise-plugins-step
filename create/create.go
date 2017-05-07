@@ -18,6 +18,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	toolkitTypeBash = "bash"
+	toolkitTypeGo   = "go"
+)
+
 // Inventory ...
 type Inventory struct {
 	Author         string
@@ -27,18 +32,20 @@ type Inventory struct {
 	Description    string
 	PrimaryTypeTag string
 	//
+	ToolkitType string
+	//
 	Year int
 }
 
 // Step ...
 func Step() error {
 	defaultAuthor := readAuthorFromGitConfig()
-	author, err := goinp.AskForStringWithDefault("Who are you / who's the author?", defaultAuthor)
+	author, err := goinp.AskForStringWithDefault(colorstring.Green("Who are you / who's the author?"), defaultAuthor)
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine author")
 	}
 
-	title, err := goinp.AskForString("What's the title / name of the Step?")
+	title, err := goinp.AskForString(colorstring.Green("What's the title / name of the Step?"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine title")
 	}
@@ -46,11 +53,11 @@ func Step() error {
 	id := generateIDFromString(title)
 	printInfoLine("Generated Step ID (from provided Title):", id)
 
-	summary, err := goinp.AskForString("Please provide a summary")
+	summary, err := goinp.AskForString(colorstring.Green("Please provide a summary"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine summary")
 	}
-	description, err := goinp.AskForString("Please provide a description")
+	description, err := goinp.AskForString(colorstring.Green("Please provide a description"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine description")
 	}
@@ -58,7 +65,7 @@ func Step() error {
 	fmt.Println()
 	// available primary categories / type_tags:
 	// https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md#step-grouping-convention
-	primaryTypeTag, err := goinp.SelectFromStrings("What's the primary category of this Step?", []string{
+	primaryTypeTag, err := goinp.SelectFromStrings(colorstring.Green("What's the primary category of this Step?"), []string{
 		"access-control", "artifact-info",
 		"installer", "deploy",
 		"utility", "dependency", "code-sign",
@@ -75,6 +82,8 @@ func Step() error {
 		Summary:        summary,
 		Description:    description,
 		PrimaryTypeTag: primaryTypeTag,
+		//
+		ToolkitType: toolkitTypeBash,
 		//
 		Year: time.Now().Year(),
 	})
@@ -129,8 +138,9 @@ func createStep(inventory Inventory) error {
 
 	// save files from templates
 	for _, aTemplate := range []struct {
-		TemplatePath string
-		FilePath     string
+		TemplatePath  string
+		FilePath      string
+		ToolkitFilter string
 	}{
 		{
 			TemplatePath: "README.md.gotemplate",
@@ -149,10 +159,6 @@ func createStep(inventory Inventory) error {
 			FilePath:     filepath.Join(stepDirPth, "step.yml"),
 		},
 		{
-			TemplatePath: "step.sh.gotemplate",
-			FilePath:     filepath.Join(stepDirPth, "step.sh"),
-		},
-		{
 			TemplatePath: "bitrise.yml.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, "bitrise.yml"),
 		},
@@ -160,11 +166,34 @@ func createStep(inventory Inventory) error {
 			TemplatePath: "bitrise.secrets.yml.gotemplate",
 			FilePath:     filepath.Join(stepDirPth, ".bitrise.secrets.yml"),
 		},
+		// Toolkit: Bash
+		{
+			TemplatePath:  "bash/step.sh.gotemplate",
+			FilePath:      filepath.Join(stepDirPth, "step.sh"),
+			ToolkitFilter: toolkitTypeBash,
+		},
+		// Toolkit: Go
+		{
+			TemplatePath:  "go/main.go.gotemplate",
+			FilePath:      filepath.Join(stepDirPth, "main.go"),
+			ToolkitFilter: toolkitTypeGo,
+		},
 	} {
+		if aTemplate.ToolkitFilter != "" && aTemplate.ToolkitFilter != inventory.ToolkitType {
+			// skip
+			continue
+		}
+
 		if err := evaluateTemplateAndWriteToFile(aTemplate.FilePath, aTemplate.TemplatePath, inventory); err != nil {
 			return errors.Wrap(err, "Failed to write template into file")
 		}
 		fmt.Println(" *", colorstring.Green("[OK]"), "created:", aTemplate.FilePath)
+	}
+
+	fmt.Println()
+	fmt.Println(colorstring.Yellow("Initializing git repository in step directory ..."))
+	if err := initGitRepoAtPath(stepDirPth); err != nil {
+		return errors.Wrap(err, "Failed to initialize git repository in step directory")
 	}
 
 	fmt.Println()
@@ -175,6 +204,14 @@ func createStep(inventory Inventory) error {
 	fmt.Println("TIP:", colorstring.Yellow("cd"), "into", colorstring.Yellow(stepDirPth), "and run",
 		colorstring.Yellow("bitrise run test"), "for a quick test drive!")
 
+	return nil
+}
+
+func initGitRepoAtPath(dirPth string) error {
+	cmdLog, err := command.New("git", "init").SetDir(dirPth).RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "Failed to git init in directory (%s). Output: %s", dirPth, cmdLog)
+	}
 	return nil
 }
 
