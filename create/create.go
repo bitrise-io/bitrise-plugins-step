@@ -33,12 +33,12 @@ type Inventory struct {
 // Step ...
 func Step() error {
 	defaultAuthor := readAuthorFromGitConfig()
-	author, err := goinp.AskForStringWithDefault("Who are you / who's the author?", defaultAuthor)
+	author, err := goinp.AskForStringWithDefault(colorstring.Green("Who are you / who's the author?"), defaultAuthor)
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine author")
 	}
 
-	title, err := goinp.AskForString("What's the title / name of the Step?")
+	title, err := goinp.AskForString(colorstring.Green("What's the title / name of the Step?"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine title")
 	}
@@ -46,11 +46,11 @@ func Step() error {
 	id := generateIDFromString(title)
 	printInfoLine("Generated Step ID (from provided Title):", id)
 
-	summary, err := goinp.AskForString("Please provide a summary")
+	summary, err := goinp.AskForString(colorstring.Green("Please provide a summary"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine summary")
 	}
-	description, err := goinp.AskForString("Please provide a description")
+	description, err := goinp.AskForString(colorstring.Green("Please provide a description"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine description")
 	}
@@ -58,7 +58,7 @@ func Step() error {
 	fmt.Println()
 	// available primary categories / type_tags:
 	// https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md#step-grouping-convention
-	primaryTypeTag, err := goinp.SelectFromStrings("What's the primary category of this Step?", []string{
+	primaryTypeTag, err := goinp.SelectFromStrings(colorstring.Green("What's the primary category of this Step?"), []string{
 		"access-control", "artifact-info",
 		"installer", "deploy",
 		"utility", "dependency", "code-sign",
