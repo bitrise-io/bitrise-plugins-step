@@ -10,6 +10,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/bitrise-io/go-utils/colorstring"
+	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/templateutil"
@@ -31,10 +32,12 @@ type Inventory struct {
 
 // Step ...
 func Step() error {
-	author, err := goinp.AskForString("Who's the author?")
+	defaultAuthor := readAuthorFromGitConfig()
+	author, err := goinp.AskForStringWithDefault("Who are you / who's the author?", defaultAuthor)
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine author")
 	}
+
 	title, err := goinp.AskForString("What's the title / name of the Step?")
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine title")
@@ -77,6 +80,14 @@ func Step() error {
 	})
 }
 
+func readAuthorFromGitConfig() string {
+	userName, err := command.New("git", "config", "user.name").RunAndReturnTrimmedOutput()
+	if err != nil {
+		return ""
+	}
+	return userName
+}
+
 func generateIDFromString(s string) string {
 	s = strings.TrimSpace(strings.ToLower(s))
 	s = strings.Map(func(r rune) rune {
@@ -101,7 +112,7 @@ func createStep(inventory Inventory) error {
 	fmt.Println()
 
 	// create directory
-	stepDirPth, err := pathutil.AbsPath(inventory.ID)
+	stepDirPth, err := pathutil.AbsPath("bitrise-step-" + inventory.ID)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get absolute path for step directory")
 	}
