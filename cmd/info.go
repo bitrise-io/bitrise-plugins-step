@@ -75,9 +75,7 @@ func printStepInfoFromStepYML(ymlPth string) error {
 		},
 	}
 
-	printStepVersionInfoOutput(stepInfo)
-
-	return nil
+	return printStepVersionInfoOutput(stepInfo)
 }
 
 func printStepInfoFromLibrary(stepID string) error {
@@ -147,9 +145,7 @@ func printStepInfoFromLibrary(stepID string) error {
 		}
 	}
 
-	printStepVersionInfoOutput(stepInfo)
-
-	return nil
+	return printStepVersionInfoOutput(stepInfo)
 }
 
 func init() {
