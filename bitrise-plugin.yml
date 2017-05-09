@@ -3,6 +3,9 @@ description: |-
   Manage Bitrise CLI steps
 trigger:
 executable:
-  osx:
-  linux:
-requirements: []
+  osx: https://github.com/bitrise-core/bitrise-plugins-step/releases/download/0.9.0/bitrise-plugins-step-Darwin-x86_64
+  linux: https://github.com/bitrise-core/bitrise-plugins-step/releases/download/0.9.0/bitrise-plugins-step-Linux-x86_64
+requirements:
+- tool: bitrise
+  min_version: 1.3.0
+  max_version: ""
