@@ -49,8 +49,7 @@ commit: %s
 `, versionOutput.Version, versionOutput.OS, versionOutput.GO, versionOutput.BuildNumber, versionOutput.Commit)
 			fmt.Println(versionStr)
 		} else {
-			versionStr := fmt.Sprintf("%s", versionOutput.Version)
-			fmt.Println(versionStr)
+			fmt.Println(versionOutput.Version)
 		}
 
 		return nil

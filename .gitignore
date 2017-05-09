@@ -1,4 +1,5 @@
 .vscode
 .gows.user.yml
 .bitrise*
-_bin
+_bin/*
+_tmp/*

@@ -1,9 +1,123 @@
 format_version: "2"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
 app:
   envs:
   - BIN_NAME: bitrise-plugins-step
+  - PLUGIN_NAME: steps
+  - RELEASE_VERSION: 0.9.0
+
 workflows:
+  # ----------------------------------------------------------------
+  # --- workflows for CI and testing
+  test:
+    before_run:
+    - go-test
+    steps:
+    - script:
+        title: Print go environment
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -x
+            # bitrise plugin install "./"
+            # bitrise :step -h
+
+  go-test:
+    before_run:
+    - _install_testing_tools
+    steps:
+    - script:
+        title: Print go environment
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -x
+            go version
+            echo $GO15VENDOREXPERIMENT
+    - script:
+        title: Export go files to test
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            no_vendor_paths="$(go list ./... | grep -v vendor)"
+            envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
+    - script:
+        title: Err check
+        inputs:
+        - content: errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
+    - script:
+        title: Go lint
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            while read -r line; do
+              echo "-> Linting: $line"
+              golint_out="$(golint $line)"
+              if [[ "${golint_out}" != "" ]] ; then
+                echo "=> Golint issues found:"
+                echo "${golint_out}"
+                exit 1
+              fi
+            done <<< "$GOLIST_WITHOUT_VENDOR"
+    - script:
+        title: Search for unused constants, variables, functions and types
+        inputs:
+        - content: |-
+            #!/bin/bash
+            unused_out=$(for pkg in $(go list ./... | grep -v vendor); do unused "$pkg"; done)
+            if [[ "${unused_out}" != "" ]] ; then
+              echo "=> Unused output:"
+              echo "${unused_out}"
+              exit 1
+            fi
+    - script:
+        title: Run gosimple
+        inputs:
+        - content: |-
+            #!/bin/bash
+            gosimple_out=$(for pkg in $(go list ./... | grep -v vendor); do gosimple "$pkg"; done)
+            if [[ "${gosimple_out}" != "" ]] ; then
+              echo "=> gosimple output:"
+              echo "${gosimple_out}"
+              exit 1
+            fi
+    - script:
+        title: Go test
+        inputs:
+        - content: go test ./...
+
+  _install_testing_tools:
+    title: Install testing tools
+    steps:
+    - script:
+        title: Install testing tools
+        run_if: ".IsCI"
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            set -x
+
+            # Install dependencies
+            go get -u github.com/tools/godep
+
+            # Check for unhandled errors
+            go get -u github.com/kisielk/errcheck
+
+            # Go lint
+            go get -u github.com/golang/lint/golint
+
+            # Check for unused constants, variables, functions and types
+            go get honnef.co/go/tools/cmd/unused
+
+            # Search for what could be simplified
+            go get honnef.co/go/tools/cmd/gosimple
+
+  # ----------------------------------------------------------------
+  # --- workflows for Utility
   _cleanup_rice_generated_files:
     steps:
     - script@1.1.3:
@@ -14,6 +128,7 @@ workflows:
             set -ex
 
             rm ./create/rice-box.go
+
   _embed_resources:
     steps:
     - script@1.1.3:
@@ -26,7 +141,70 @@ workflows:
             go get github.com/GeertJohan/go.rice/rice
             cd ./create
             rice embed-go
+
+  deps-update:
+    title: Godeps update
+    description: |
+      Used for updating bitrise dependencies with godep
+    steps:
+    - script:
+        title: Dependency update
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u -v github.com/tools/godep
+
+            rm -rf ./Godeps
+            rm -rf ./vendor
+
+            go get -t -d ./...
+            go get github.com/inconshreveable/mousetrap
+            go get github.com/Sirupsen/logrus
+            go get golang.org/x/sys/unix
+            go get github.com/davecgh/go-spew/spew
+            go get github.com/pmezard/go-difflib/difflib
+            go get gopkg.in/yaml.v2
+            godep save ./...
+
+  install:
+    before_run:
+    - _embed_resources
+    after_run:
+    - _cleanup_rice_generated_files
+    steps:
+    - script:
+        title: Embed templates and go install
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+
+            go install
+
+  # ----------------------------------------------------------------
+  # --- workflows for Releasing
   create-release:
+    title: Create release with Releaseman
+    before_run:
+    - test
+    after_run:
+    - create_binaries
+    - update_plugin_defintion
+    steps:
+    - script:
+        title:
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u github.com/bitrise-tools/releaseman
+            export CI=true
+            releaseman create-changelog \
+              --version "$RELEASE_VERSION" \
+              --set-version-script "bash _scripts/set_version.sh version/version.go"
+
+  create_binaries:
     before_run:
     - _embed_resources
     after_run:
@@ -63,6 +241,7 @@ workflows:
               -o "${binary_path}"
 
             cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
+            envman add --key OSX_BIN_NAME --value "${BIN_NAME}-${OS}-${ARCH}"
 
 
             # Create Linux binary
@@ -75,50 +254,21 @@ workflows:
               -o "${binary_path}"
 
             cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
-  deps-update:
-    title: Godeps update
-    description: |
-      Used for updating bitrise dependencies with godep
+            envman add --key LINUX_BIN_NAME --value "${BIN_NAME}-${OS}-${ARCH}"
+    
+  update_plugin_defintion:
     steps:
     - script:
-        title: Dependency update
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get -u -v github.com/tools/godep
-
-            rm -rf ./Godeps
-            rm -rf ./vendor
-
-            go get -t -d ./...
-            go get github.com/inconshreveable/mousetrap
-            go get github.com/Sirupsen/logrus
-            go get golang.org/x/sys/unix
-            go get github.com/davecgh/go-spew/spew
-            go get github.com/pmezard/go-difflib/difflib
-            go get gopkg.in/yaml.v2
-            godep save ./...
-  install:
-    before_run:
-    - _embed_resources
-    after_run:
-    - _cleanup_rice_generated_files
-    steps:
-    - script:
-        title: Embed templates and go install
+        title: Create binaries
         inputs:
         - content: |-
             #!/bin/bash
-            set -ex
+            set -e
 
-            go install
-  test:
-    steps:
-    - script:
-        title: go test
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            go test ./...
+            go get github.com/bitrise-io/go-utils/fileutil
+
+            go run _scripts/set_version.go \
+              --src "https://github.com/bitrise-core/bitrise-plugins-step" \
+              --version "$RELEASE_VERSION" \
+              --osx_bin "$OSX_BIN_NAME" \
+              --linux_bin "$LINUX_BIN_NAME"
