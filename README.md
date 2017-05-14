@@ -4,7 +4,7 @@ Bitrise Plugin to interact with steps, list them, retrieve information, or creat
 
 ## WIP
 
-- git init
+- ask for website / git remote: fill out the website related infos in step.yml & the go package name
 
 ## How to release this plugin
 
