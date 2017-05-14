@@ -57,9 +57,15 @@ deps:
   - name: git
   - name: wget
 
+{{ if eq .ToolkitType "bash" }}
 toolkit:
   bash:
     entry_file: step.sh
+{{ else if eq .ToolkitType "go" }}
+toolkit:
+  go:
+    package_name: {{ .GoToolkitInventory.PackageID }}
+{{ end }}
 
 inputs:
   - example_step_input: Default Value - you can leave this empty if you want to
