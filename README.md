@@ -4,7 +4,7 @@ Bitrise Plugin to interact with steps, list them, retrieve information, or creat
 
 ## WIP
 
-- ask for website / git remote: fill out the website related infos in step.yml & the go package name
+- prepare everything for "share"
 - update the generated README template, to use the step create plugin instead of the previous, manual step template copying
 
 ## How to release this plugin
