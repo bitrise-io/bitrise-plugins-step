@@ -10,7 +10,7 @@ Bitrise Plugin to interact with steps, list them, retrieve information, or creat
 ## How to release this plugin
 
 - bump `RELEASE_VERSION` in bitrise.yml
-- comit these change
+- commit these change
 - call `bitrise run create-release`
 - check and update the generated CHANGELOG.md
 - test the generated binaries in _bin/ directory
