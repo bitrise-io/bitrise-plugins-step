@@ -38,6 +38,10 @@ type InventoryModel struct {
 	Description    string
 	PrimaryTypeTag string
 	//
+	WebsiteURL    string
+	SourceCodeURL string
+	SupportURL    string
+	//
 	ToolkitType        string
 	GoToolkitInventory GoToolkitInventoryModel
 	//
@@ -107,10 +111,12 @@ func Step() error {
 	fmt.Println("Once created, please copy paste the repo's HTTPS URL.")
 	fmt.Println("If you create it on GitHub the HTTPS URL should look like this:")
 	fmt.Println(" " + colorstring.Yellow("https://github.com/YOUR-GITHUB-USERNAME/"+stepDirAndRepoNameFromID(id)))
-	gitCloneURL, err := goinp.AskForString(colorstring.Green("What's the step's repo URL?"))
+	websiteURL, err := goinp.AskForString(colorstring.Green("What's the step's repo (website) URL?"))
 	if err != nil {
 		return errors.Wrap(err, "Failed to determine the package ID")
 	}
+	sourceCodeURL := websiteURL
+	supportURL := websiteURL
 
 	goInv := GoToolkitInventoryModel{}
 	if toolkitType == toolkitTypeGo {
@@ -135,6 +141,10 @@ func Step() error {
 		Summary:        summary,
 		Description:    description,
 		PrimaryTypeTag: primaryTypeTag,
+		//
+		WebsiteURL:    websiteURL,
+		SourceCodeURL: sourceCodeURL,
+		SupportURL:    supportURL,
 		//
 		ToolkitType:        toolkitType,
 		GoToolkitInventory: goInv,
@@ -270,7 +280,7 @@ func createStep(inventory InventoryModel) error {
 
 	fmt.Println()
 	fmt.Println(colorstring.Yellow("Initializing git repository in step directory ..."))
-	if err := initGitRepoAtPath(stepDirAbsPth); err != nil {
+	if err := initGitRepoAtPath(stepDirAbsPth, inventory.SourceCodeURL); err != nil {
 		return errors.Wrap(err, "Failed to initialize git repository in step directory")
 	}
 
@@ -285,11 +295,23 @@ func createStep(inventory InventoryModel) error {
 	return nil
 }
 
-func initGitRepoAtPath(dirPth string) error {
-	cmdLog, err := command.New("git", "init").SetDir(dirPth).RunAndReturnTrimmedCombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "Failed to git init in directory (%s). Output: %s", dirPth, cmdLog)
+func initGitRepoAtPath(dirPth string, remoteURL string) error {
+	{
+		cmdGitInit := command.New("git", "init")
+		fmt.Println(" $", cmdGitInit.PrintableCommandArgs())
+		if cmdLog, err := cmdGitInit.SetDir(dirPth).RunAndReturnTrimmedCombinedOutput(); err != nil {
+			return errors.Wrapf(err, "Failed to 'git init' in directory (%s). Output: %s", dirPth, cmdLog)
+		}
 	}
+
+	{
+		cmdGitRemoteAdd := command.New("git", "remote", "add", "origin", remoteURL)
+		fmt.Println(" $", cmdGitRemoteAdd.PrintableCommandArgs())
+		if cmdLog, err := cmdGitRemoteAdd.SetDir(dirPth).RunAndReturnTrimmedCombinedOutput(); err != nil {
+			return errors.Wrapf(err, "Failed to 'git remote add origin %s'. Output: %s", remoteURL, cmdLog)
+		}
+	}
+
 	return nil
 }
 

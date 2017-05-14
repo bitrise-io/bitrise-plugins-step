@@ -13,9 +13,9 @@ summary: |
   {{ .Summary }}
 description: |
   {{ .Description }}
-website: https://github.com/...
-source_code_url: https://github.com/...
-support_url: https://github.com/.../issues
+website: {{ .WebsiteURL }}
+source_code_url: {{ .SourceCodeURL }}
+support_url: {{ .SupportURL }}
 host_os_tags:
   - osx-10.10
   - ubuntu-16.04
