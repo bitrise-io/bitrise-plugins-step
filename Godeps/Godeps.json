@@ -16,8 +16,8 @@
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.11.5-12-g10f801e",
-			"Rev": "10f801ebc38b33738c9d17d50860f484a0988ff5"
+			"Comment": "v0.11.5-32-gacfabf3",
+			"Rev": "acfabf31db8f45a9174f54a0d48ea4d15627af4d"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/envman/models",
@@ -91,6 +91,10 @@
 			"Rev": "7faf6f683b1cdd05f6f31dd97cf8676a990bbf51"
 		},
 		{
+			"ImportPath": "github.com/bitrise-tools/gows/goutil",
+			"Rev": "e4fb47946c852c6f46d28b27a4d0d1a02f5eb0ac"
+		},
+		{
 			"ImportPath": "github.com/daaku/go.zipexe",
 			"Rev": "a5fe2436ffcb3236e175e5149162b41cd28bd27d"
 		},
@@ -105,12 +109,12 @@
 		},
 		{
 			"ImportPath": "github.com/kardianos/osext",
-			"Rev": "9d302b58e975387d0b4d9be876622c86cefe64be"
+			"Rev": "ae77be60afb1dcacde03767a8c37337fad28ac14"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",
-			"Comment": "v0.8.0-4-gff09b13",
-			"Rev": "ff09b135c25aae272398c51a07235b90a75aa4f0"
+			"Comment": "v0.8.0-5-gc605e28",
+			"Rev": "c605e284fe17294bda444b34710735b29d1a9d90"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
@@ -119,11 +123,11 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/cobra",
-			"Rev": "7b1b6e8dc027253d45fc029bc269d1c019f83a34"
+			"Rev": "51b7cf57e102be20a09835264c9d92155d602532"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "f1d95a35e132e8a1868023a08932b14f0b8b8fcb"
+			"Rev": "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
@@ -137,7 +141,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "9ccfe848b9db8435a24c424abbc07a921adf1df5"
+			"Rev": "f845067cf72a21fb4929b0e6a35273bd83b56396"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
