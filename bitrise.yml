@@ -5,7 +5,7 @@ app:
   envs:
   - BIN_NAME: bitrise-plugins-step
   - PLUGIN_NAME: steps
-  - RELEASE_VERSION: 0.9.1
+  - RELEASE_VERSION: 0.9.2
 
 workflows:
   # ----------------------------------------------------------------
@@ -255,7 +255,7 @@ workflows:
 
             cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
             envman add --key LINUX_BIN_NAME --value "${BIN_NAME}-${OS}-${ARCH}"
-    
+
   update_plugin_defintion:
     steps:
     - script:
