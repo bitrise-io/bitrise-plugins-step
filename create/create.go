@@ -98,6 +98,20 @@ func Step() error {
 		return errors.Wrap(err, "Failed to determine the toolkit")
 	}
 
+	fmt.Println()
+	fmt.Println("Website & source code URL:")
+	fmt.Println("To use your step quickly in your bitrise configs, and in case you'll want to share it with others,")
+	fmt.Println(" you'll have to make the source code available on a git hosting service.")
+	fmt.Println("Please create a repository on your favorite source code hosting service,")
+	fmt.Println(" with the repository name:", colorstring.Yellow(stepDirAndRepoNameFromID(id)))
+	fmt.Println("Once created, please copy paste the repo's HTTPS URL.")
+	fmt.Println("If you create it on GitHub the HTTPS URL should look like this:")
+	fmt.Println(" " + colorstring.Yellow("https://github.com/YOUR-GITHUB-USERNAME/"+stepDirAndRepoNameFromID(id)))
+	gitCloneURL, err := goinp.AskForString(colorstring.Green("What's the step's repo URL?"))
+	if err != nil {
+		return errors.Wrap(err, "Failed to determine the package ID")
+	}
+
 	goInv := GoToolkitInventoryModel{}
 	if toolkitType == toolkitTypeGo {
 		fmt.Println()
