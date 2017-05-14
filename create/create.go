@@ -159,8 +159,9 @@ func Step() error {
 			}
 			websiteURL = fmt.Sprintf("https://github.com/%s/%s", ghUsername, stepDirAndRepoNameFromID(inventoryForCreateStep.ID))
 			fmt.Println("We'll use", colorstring.Yellow(websiteURL), "as the website/repo URL for this step.")
-			fmt.Println("Please when you create the repository for the step create it under the user/org:", colorstring.Yellow(ghUsername))
-			fmt.Println(" and the name of the repository should be:", stepDirAndRepoNameFromID(inventoryForCreateStep.ID))
+			fmt.Println("Please when you create the repository on GitHub for the step")
+			fmt.Println(" create it under the user/org:", colorstring.Yellow(ghUsername))
+			fmt.Println(" and the name of the repository should be:", colorstring.Yellow(stepDirAndRepoNameFromID(inventoryForCreateStep.ID)))
 		} else {
 			fmt.Println("To use your step quickly in your bitrise configs, and in case you'll want to share it with others,")
 			fmt.Println(" you'll have to make the source code available on a git hosting service.")
