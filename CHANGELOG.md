@@ -1,6 +1,11 @@
-## Changelog (Current version: 0.9.3)
+## Changelog (Current version: 0.9.4)
 
 -----------------
+
+### 0.9.4 (2017 Jun 29)
+
+* [4f9d7e7] RELEASE_VERSION: 0.9.4
+* [4ac579d] Support for steps hosted on GitHub adjusted (#19)
 
 ### 0.9.3 (2017 May 14)
 
@@ -19,4 +24,4 @@
 
 -----------------
 
-Updated: 2017 May 14
+Updated: 2017 Jun 29
