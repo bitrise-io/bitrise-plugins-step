@@ -1,11 +1,11 @@
-format_version: "2"
+format_version: "3"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
   - BIN_NAME: bitrise-plugins-step
   - PLUGIN_NAME: steps
-  - RELEASE_VERSION: 0.9.3
+  - RELEASE_VERSION: 0.9.4
 
 workflows:
   # ----------------------------------------------------------------
