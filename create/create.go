@@ -152,6 +152,7 @@ func Step() error {
 			return errors.Wrap(err, "Failed to determine whether source will be hosted on GitHub")
 		}
 		websiteURL := ""
+		supportURL := ""
 		if isGitHub {
 			ghUsername, err := goinp.AskForString(colorstring.Green("What's your GitHub username (user/org where you'll register the step's repository)?"))
 			if err != nil {
@@ -162,6 +163,7 @@ func Step() error {
 			fmt.Println("Please when you create the repository on GitHub for the step")
 			fmt.Println(" create it under the user/org:", colorstring.Yellow(ghUsername))
 			fmt.Println(" and the name of the repository should be:", colorstring.Yellow(stepDirAndRepoNameFromID(inventoryForCreateStep.ID)))
+			supportURL = websiteURL + "/issues"
 		} else {
 			fmt.Println("To use your step quickly in your bitrise configs, and in case you'll want to share it with others,")
 			fmt.Println(" you'll have to make the source code available on a git hosting service.")
@@ -174,11 +176,12 @@ func Step() error {
 			if err != nil {
 				return errors.Wrap(err, "Failed to determine the package ID")
 			}
+			supportURL = websiteURL
 		}
 
 		inventoryForCreateStep.WebsiteURL = websiteURL
 		inventoryForCreateStep.SourceCodeURL = websiteURL
-		inventoryForCreateStep.SupportURL = websiteURL
+		inventoryForCreateStep.SupportURL = supportURL
 	}
 
 	if inventoryForCreateStep.ToolkitType == toolkitTypeGo {
