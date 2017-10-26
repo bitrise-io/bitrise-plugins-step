@@ -22,41 +22,41 @@
 
 
 [[constraint]]
-  branch = "master"
   name = "github.com/GeertJohan/go.rice"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/bitrise-io/bitrise"
-  version = "1.10.0"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/bitrise-io/envman"
-  version = "1.1.8"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/bitrise-io/go-utils"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/bitrise-io/goinp"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/bitrise-io/stepman"
-  version = "0.9.35"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/bitrise-tools/gows"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/pkg/errors"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/spf13/cobra"
-  version = "0.0.1"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
-  version = "1.1.4"
+  branch = "master"

@@ -14,10 +14,10 @@
   revision = "89742aefa4b206dcf400792f3bd35b542998eb3b"
 
 [[projects]]
+  branch = "master"
   name = "github.com/bitrise-io/bitrise"
   packages = ["configs","output","tools"]
-  revision = "798c1c75ba4e525eb99fbe6fc17029ddaf2b3e7c"
-  version = "1.10.0"
+  revision = "a9b23e3bbc7373d20849fcceee3b73a466b0d705"
 
 [[projects]]
   name = "github.com/bitrise-io/envman"
@@ -98,10 +98,10 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/stretchr/testify"
   packages = ["assert","require"]
-  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
-  version = "v1.1.4"
+  revision = "2aa2c176b9dab406a6970f6a55f513e8a8c8b18f"
 
 [[projects]]
   branch = "master"
@@ -130,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a91b935e32e1bdde590c841789fc763074161c77128cff736c6df36c07e76331"
+  inputs-digest = "17552c2764291a71d68b3d8c103293514d1cc63e1fe6adaba24ac1dbfaf3a20e"
   solver-name = "gps-cdcl"
   solver-version = 1
