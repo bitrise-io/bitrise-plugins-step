@@ -39,9 +39,8 @@ func printStepList() error {
 		if err != nil {
 			return fmt.Errorf("Failed to print step list, err: %s", err)
 		}
-		if out != "" {
-			fmt.Printf("Step list:\n%s\n", out)
-		}
+		fmt.Println("Step list:")
+		fmt.Println(out)
 	} else if format == output.FormatJSON {
 		out, err := tools.StepmanJSONStepList(collection)
 		if err != nil {
