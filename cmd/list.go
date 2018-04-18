@@ -1,38 +1,54 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/bitrise-io/bitrise/output"
+	"github.com/bitrise-io/bitrise/tools"
 	"github.com/spf13/cobra"
+)
+
+var (
+	collection = ""
+	format     = ""
 )
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("list called")
+	Short: "List of available steps",
+	Long:  "List of available steps",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return printStepList()
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(listCmd)
+	listCmd.Flags().StringVarP(&collection, "collection", "c", "", "Collection of step.")
+	listCmd.Flags().StringVar(&format, "format", "", "Output format. Accepted: raw, json.")
+}
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+func printStepList() error {
+	if collection == "" {
+		return errors.New("No collection defined")
+	}
+	if format == "" || format == output.FormatRaw {
+		out, err := tools.StepmanRawStepList(collection)
+		if err != nil {
+			return fmt.Errorf("Failed to print step list, err: %s", err)
+		}
+		fmt.Println("Step list:")
+		fmt.Println(out)
+	} else if format == output.FormatJSON {
+		out, err := tools.StepmanJSONStepList(collection)
+		if err != nil {
+			return fmt.Errorf("Failed to print step list, err: %s", err)
+		}
+		fmt.Println(out)
+	} else {
+		return fmt.Errorf("Invalid format: %s", format)
+	}
+	return nil
 }

@@ -143,29 +143,19 @@ workflows:
             rice embed-go
 
   deps-update:
-    title: Godeps update
+    title: Dep update
     description: |
-      Used for updating bitrise dependencies with godep
+      Used for updating bitrise dependencies with dep
     steps:
     - script:
         title: Dependency update
         inputs:
-        - content: |
+        - content: |-
             #!/bin/bash
             set -ex
-            go get -u -v github.com/tools/godep
-
-            rm -rf ./Godeps
-            rm -rf ./vendor
-
-            go get -t -d ./...
-            go get github.com/inconshreveable/mousetrap
-            go get github.com/Sirupsen/logrus
-            go get golang.org/x/sys/unix
-            go get github.com/davecgh/go-spew/spew
-            go get github.com/pmezard/go-difflib/difflib
-            go get gopkg.in/yaml.v2
-            godep save ./...
+            go get -u -v github.com/golang/dep/cmd/dep
+            dep ensure -v
+            dep ensure -v -update
 
   install:
     before_run:
