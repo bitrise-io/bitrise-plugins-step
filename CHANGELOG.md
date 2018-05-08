@@ -1,6 +1,13 @@
-## Changelog (Current version: 0.9.5)
+## Changelog (Current version: 0.9.6)
 
 -----------------
+
+### 0.9.6 (2018 May 08)
+
+* [7f07e36] prepare for 0.9.6
+* [b3d7b0c] dep update (#23)
+* [e1d8bdd] dep update (#22)
+* [5618658] Implement step-list command (#21)
 
 ### 0.9.5 (2017 Sep 06)
 
@@ -29,4 +36,4 @@
 
 -----------------
 
-Updated: 2017 Sep 06
+Updated: 2018 May 08
