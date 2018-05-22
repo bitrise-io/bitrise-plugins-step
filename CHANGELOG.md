@@ -1,6 +1,11 @@
-## Changelog (Current version: 0.9.6)
+## Changelog (Current version: 0.9.7)
 
 -----------------
+
+### 0.9.7 (2018 May 22)
+
+* [719265b] Prepare for 0.9.7
+* [23d7bb4] create/template/bitrise.yml: .git postFix added to the BITRISE_STEP_GIT_CLONE_URL; (#24)
 
 ### 0.9.6 (2018 May 08)
 
@@ -36,4 +41,4 @@
 
 -----------------
 
-Updated: 2018 May 08
+Updated: 2018 May 22
