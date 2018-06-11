@@ -1,6 +1,11 @@
-## Changelog (Current version: 0.9.7)
+## Changelog (Current version: 0.9.8)
 
 -----------------
+
+### 0.9.8 (2018 Jun 11)
+
+* [2ed44d8] prepare for 0.9.8
+* [130ed42] go dependencies update (#25)
 
 ### 0.9.7 (2018 May 22)
 
@@ -41,4 +46,4 @@
 
 -----------------
 
-Updated: 2018 May 22
+Updated: 2018 Jun 11
