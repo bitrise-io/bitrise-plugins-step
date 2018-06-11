@@ -5,7 +5,7 @@ app:
   envs:
   - BIN_NAME: bitrise-plugins-step
   - PLUGIN_NAME: steps
-  - RELEASE_VERSION: 0.9.7
+  - RELEASE_VERSION: 0.9.8
 
 workflows:
   # ----------------------------------------------------------------
