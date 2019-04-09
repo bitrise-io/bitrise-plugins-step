@@ -23,6 +23,7 @@ func TestGetKeyValuePair(t *testing.T) {
 			ValueOptions:      []string{"test_key2", "test_value2"},
 			IsRequired:        pointers.NewBoolPtr(true),
 			IsExpand:          pointers.NewBoolPtr(false),
+			IsSensitive:       pointers.NewBoolPtr(false),
 			IsDontChangeValue: pointers.NewBoolPtr(true),
 			IsTemplate:        pointers.NewBoolPtr(false),
 			SkipIfEmpty:       pointers.NewBoolPtr(false),
@@ -84,11 +85,13 @@ func TestParseFromInterfaceMap(t *testing.T) {
 	model["title"] = "test_title"
 	model["value_options"] = []string{"test_key2", "test_value2"}
 	model["is_expand"] = true
+	model["is_sensitive"] = false
 	require.NoError(t, envOptions.ParseFromInterfaceMap(model))
 	require.Equal(t, "test_title", *envOptions.Title)
 	require.Equal(t, "test_key2", envOptions.ValueOptions[0])
 	require.Equal(t, "test_value2", envOptions.ValueOptions[1])
 	require.Equal(t, true, *envOptions.IsExpand)
+	require.Equal(t, false, *envOptions.IsSensitive)
 
 	// title is not a string
 	model = map[string]interface{}{}
@@ -153,7 +156,7 @@ func TestParseFromInterfaceMap(t *testing.T) {
 	// other_key is not supported key
 	model = map[string]interface{}{}
 	model["other_key"] = true
-	require.EqualError(t, envOptions.ParseFromInterfaceMap(model), "not supported key found in options: other_key")
+	require.NoError(t, envOptions.ParseFromInterfaceMap(model))
 }
 
 func TestGetOptions(t *testing.T) {
@@ -190,7 +193,7 @@ func TestGetOptions(t *testing.T) {
 		},
 	}
 	_, err = env.GetOptions()
-	require.EqualError(t, err, "not supported key found in options: test")
+	require.NoError(t, err)
 }
 
 func TestNormalize(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/templateutil"
 	"github.com/bitrise-io/goinp/goinp"
-	"github.com/bitrise-tools/gows/goutil"
+	"github.com/bitrise-io/gows/goutil"
 	"github.com/pkg/errors"
 )
 

@@ -4,8 +4,6 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 app:
   envs:
   - BIN_NAME: bitrise-plugins-step
-  - PLUGIN_NAME: steps
-  - RELEASE_VERSION: 0.9.8
 
 workflows:
   # ----------------------------------------------------------------
@@ -73,28 +71,6 @@ workflows:
 
             go install
 
-  # ----------------------------------------------------------------
-  # --- workflows for Releasing
-  create-release:
-    title: Create release with Releaseman
-    before_run:
-    - test
-    after_run:
-    - create_binaries
-    - update_plugin_defintion
-    steps:
-    - script:
-        title:
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get -u github.com/bitrise-tools/releaseman
-            export CI=true
-            releaseman create-changelog \
-              --version "$RELEASE_VERSION" \
-              --set-version-script "bash _scripts/set_version.sh version/version.go"
-
   create_binaries:
     before_run:
     - _embed_resources
@@ -116,7 +92,7 @@ workflows:
             set -x
 
             git_commit_hash="$(git rev-parse HEAD)"
-            version_package="github.com/bitrise-core/bitrise-plugins-step/version"
+            version_package="github.com/bitrise-io/bitrise-plugins-step/version"
 
             export ARCH=x86_64
             export GOARCH=amd64
@@ -159,7 +135,7 @@ workflows:
             go get github.com/bitrise-io/go-utils/fileutil
 
             go run _scripts/set_version.go \
-              --src "https://github.com/bitrise-core/bitrise-plugins-step" \
+              --src "https://github.com/bitrise-io/bitrise-plugins-step" \
               --version "$RELEASE_VERSION" \
               --osx_bin "$OSX_BIN_NAME" \
               --linux_bin "$LINUX_BIN_NAME"

@@ -18,6 +18,8 @@ const (
 const (
 	// DefaultIsExpand ...
 	DefaultIsExpand = true
+	// DefaultIsSensitive ...
+	DefaultIsSensitive = false
 	// DefaultSkipIfEmpty ...
 	DefaultSkipIfEmpty = false
 
@@ -27,6 +29,8 @@ const (
 	DefaultIsDontChangeValue = false
 	// DefaultIsTemplate ...
 	DefaultIsTemplate = false
+	// DefaultUnset ...
+	DefaultUnset = false
 )
 
 // NewEnvJSONList ...
@@ -143,6 +147,12 @@ func (envSerModel *EnvironmentItemOptionsModel) ParseFromInterfaceMap(input map[
 				return fmt.Errorf("failed to parse bool value (%#v) for key (%s)", value, keyStr)
 			}
 			envSerModel.IsExpand = castedBoolPtr
+		case "is_sensitive":
+			castedBoolPtr, ok := parseutil.CastToBoolPtr(value)
+			if !ok {
+				return fmt.Errorf("failed to parse bool value (%#v) for key (%s)", value, keyStr)
+			}
+			envSerModel.IsSensitive = castedBoolPtr
 		case "is_dont_change_value":
 			castedBoolPtr, ok := parseutil.CastToBoolPtr(value)
 			if !ok {
@@ -161,6 +171,12 @@ func (envSerModel *EnvironmentItemOptionsModel) ParseFromInterfaceMap(input map[
 				return fmt.Errorf("failed to parse bool value (%#v) for key (%s)", value, keyStr)
 			}
 			envSerModel.SkipIfEmpty = castedBoolPtr
+		case "unset":
+			castedBoolPtr, ok := parseutil.CastToBoolPtr(value)
+			if !ok {
+				return fmt.Errorf("failed to parse bool value (%#v) for key (%s)", value, keyStr)
+			}
+			envSerModel.Unset = castedBoolPtr
 		case "meta":
 			castedMapStringInterface, ok := parseutil.CastToMapStringInterface(value)
 			if !ok {
@@ -168,7 +184,7 @@ func (envSerModel *EnvironmentItemOptionsModel) ParseFromInterfaceMap(input map[
 			}
 			envSerModel.Meta = castedMapStringInterface
 		default:
-			return fmt.Errorf("not supported key found in options: %s", keyStr)
+			// intentional no-op case -- we just ignore unrecognized fields
 		}
 	}
 	return nil
@@ -271,6 +287,9 @@ func (env *EnvironmentItemModel) FillMissingDefaults() error {
 	if options.IsExpand == nil {
 		options.IsExpand = pointers.NewBoolPtr(DefaultIsExpand)
 	}
+	if options.IsSensitive == nil {
+		options.IsSensitive = pointers.NewBoolPtr(DefaultIsSensitive)
+	}
 	if options.IsDontChangeValue == nil {
 		options.IsDontChangeValue = pointers.NewBoolPtr(DefaultIsDontChangeValue)
 	}
@@ -283,6 +302,10 @@ func (env *EnvironmentItemModel) FillMissingDefaults() error {
 	if options.Meta == nil {
 		options.Meta = map[string]interface{}{}
 	}
+	if options.Unset == nil {
+		options.Unset = pointers.NewBoolPtr(DefaultUnset)
+	}
+
 	(*env)[OptionsKey] = options
 	return nil
 }
