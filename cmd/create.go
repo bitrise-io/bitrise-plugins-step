@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/bitrise-core/bitrise-plugins-step/create"
+	"github.com/bitrise-io/bitrise-plugins-step/create"
 	"github.com/spf13/cobra"
 )
 

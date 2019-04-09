@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/bitrise-core/bitrise-plugins-step/version"
+	"github.com/bitrise-io/bitrise-plugins-step/version"
 	"github.com/spf13/cobra"
 )
 

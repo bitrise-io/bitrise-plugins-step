@@ -10,8 +10,8 @@ import (
 	"github.com/bitrise-io/stepman/models"
 	"github.com/bitrise-io/stepman/stepman"
 
-	"github.com/bitrise-core/bitrise-plugins-step/stepmanutil"
-	"github.com/bitrise-core/bitrise-plugins-step/utils"
+	"github.com/bitrise-io/bitrise-plugins-step/stepmanutil"
+	"github.com/bitrise-io/bitrise-plugins-step/utils"
 	"github.com/spf13/cobra"
 )
 
