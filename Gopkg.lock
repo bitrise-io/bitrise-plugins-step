@@ -3,26 +3,26 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a356e16e60f11343cb04aff26d84c2afae4035814a412f1c31ba9a8d379828fb"
+  digest = "1:5687fbc1645b88f9cab21657e4b7bfe7093c03b7e8e623efdf4dd5ecf16b6352"
   name = "github.com/GeertJohan/go.rice"
   packages = [
     ".",
     "embedded",
   ]
   pruneopts = ""
-  revision = "b3203a718155cf0303e4db92aa4d1785a566142c"
+  revision = "c880e3cd4dd81db36b423e83dc0aeea4dca93774"
 
 [[projects]]
   branch = "master"
-  digest = "1:a9d571cb07f008d5992d0ca174c4527824a5be1f386d00746c0ca24a8bea0456"
+  digest = "1:c52c2902c8ea404ab6e8095f1f48613037ce2660a4fede58089d820e95b08b74"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
   pruneopts = ""
-  revision = "9b3cdde74fbe9443d704467498a7dcb61a79de9b"
+  revision = "f0375eb5b588893ff556c71dee32d98e57a9b777"
 
 [[projects]]
   branch = "master"
-  digest = "1:3cb2e79f0d757cb1e4b189b2ded93c36afc07c0c12f8ad51eeedbf77b564f7c6"
+  digest = "1:b9843de7f7491781f1c38767d5a465ba9daccf83f83c94089cee62eed1e750c2"
   name = "github.com/bitrise-io/bitrise"
   packages = [
     "configs",
@@ -32,19 +32,19 @@
     "tools/timeoutcmd",
   ]
   pruneopts = ""
-  revision = "73db1738b2b2569713dbaa88b876b135664aa2f4"
+  revision = "2ec917b478fe766c026ba3e78954db0f6b3954d4"
 
 [[projects]]
   branch = "master"
-  digest = "1:a5b446734aaae7f706e340647bd166788523ed5b334c3a9013beea523ab2bb08"
+  digest = "1:d15d2d1df110440485fb16a792754804a259a5a035f5911ba8b1a8d84a1365fc"
   name = "github.com/bitrise-io/envman"
   packages = ["models"]
   pruneopts = ""
-  revision = "c6683c3e097216a80eb72092bf857c8a9591195e"
+  revision = "1716460e0651c3f40b9542f9e237b9a3d35773bb"
 
 [[projects]]
   branch = "master"
-  digest = "1:6083fc4e90fe661aad326c42fa16fb85774cb55711560d1208c82ff290534836"
+  digest = "1:1cc0cd4ff17a28106fa30b6951cc4001a8107dd6170f6b73b5a9235341772a11"
   name = "github.com/bitrise-io/go-utils"
   packages = [
     "colorstring",
@@ -62,7 +62,7 @@
     "versions",
   ]
   pruneopts = ""
-  revision = "2a09aab8380d7842750328aebd5671bcccea89c8"
+  revision = "8898129615c9e407fc6b0e60ea882f2b18ec4dc2"
 
 [[projects]]
   branch = "master"
@@ -82,22 +82,22 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bd45be4bb8c60ad5be9db42477d813740bdf9625600309064e6ca8fb485686fe"
+  digest = "1:b7867168bb040b1dad5967dd45fb61a98a546c9f9da2fefcb580a52ca55ff5b2"
   name = "github.com/bitrise-io/stepman"
   packages = [
     "models",
     "stepman",
   ]
   pruneopts = ""
-  revision = "f4f6ef946f83d9a4e823d3531e15287dec05fce1"
+  revision = "050220145c5a1c555ae67c6f62677d95eb46ed26"
 
 [[projects]]
-  digest = "1:86b9f9c54fcddec313009ef19073bf0124bbdae3701080c32f67c0c8817b3b7c"
+  digest = "1:8e8da6cc8cca12851d4e089d970a0f7387b3a6bcc8c459ff432213b03076a66d"
   name = "github.com/daaku/go.zipexe"
   packages = ["."]
   pruneopts = ""
-  revision = "db7cf2ba330f8c2d28b827826e33d6628ea7e9e0"
-  version = "v1.0.0"
+  revision = "74d766ac1dde7458348221869a7d1e7e5fa0597e"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
@@ -176,11 +176,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:55c52474bb389797ed66db92966e2b9ddc98a25d9d05c8aa55787fe03d4d4084"
+  digest = "1:c94b7a0d1888676e4644809f04fab1e454036205b5470f3bbf238eeb834d6d03"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
+  revision = "3a4b5fb9f71f5874b2374ae059bc0e0bcb52e145"
 
 [[projects]]
   branch = "v2"
