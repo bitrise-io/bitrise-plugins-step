@@ -449,7 +449,7 @@ workflows:
 
 func TestGetBitriseConfigFromBase64Data(t *testing.T) {
 	configStr := `
-format_version: 0.9.10
+format_version: 0.9.11
 default_step_lib_source: "https://github.com/bitrise-io/bitrise-steplib.git"
 
 workflows:
@@ -463,7 +463,7 @@ workflows:
 	require.NoError(t, err)
 	require.Equal(t, 0, len(warnings))
 
-	require.Equal(t, "0.9.10", config.FormatVersion)
+	require.Equal(t, "0.9.11", config.FormatVersion)
 	require.Equal(t, "https://github.com/bitrise-io/bitrise-steplib.git", config.DefaultStepLibSource)
 
 	workflow, found := config.Workflows["target"]
