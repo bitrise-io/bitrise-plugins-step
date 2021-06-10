@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/bitrise-io/bitrise/configs"
 	"github.com/bitrise-io/bitrise/tools/filterwriter"
 	"github.com/bitrise-io/bitrise/tools/timeoutcmd"
@@ -40,6 +40,8 @@ func UnameGOARCH() (string, error) {
 	switch runtime.GOARCH {
 	case "amd64":
 		return "x86_64", nil
+	case "arm64":
+		return "arm64", nil
 	}
 	return "", fmt.Errorf("Unsupported architecture (%s)", runtime.GOARCH)
 }
@@ -338,12 +340,36 @@ func EnvmanClear(envstorePth string) error {
 	return nil
 }
 
+// GetSecretValues filters out built in configuration parameters from the secret envs
+func GetSecretValues(secrets []envmanModels.EnvironmentItemModel) []string {
+	var secretValues []string
+	for _, secret := range secrets {
+		key, value, err := secret.GetKeyValuePair()
+		if err != nil || len(value) < 1 || IsBuiltInFlagTypeKey(key) {
+			if err != nil {
+				log.Warnf("Error getting key-value pair from secret (%v): %s", secret, err)
+			}
+			continue
+		}
+		secretValues = append(secretValues, value)
+	}
+
+	return secretValues
+}
+
 // EnvmanRun runs a command through envman.
-func EnvmanRun(envstorePth, workDirPth string, cmdArgs []string, timeout time.Duration, secrets []envmanModels.EnvironmentItemModel) (int, error) {
+func EnvmanRun(envstorePth,
+	workDirPth string,
+	cmdArgs []string,
+	timeout time.Duration,
+	secrets []envmanModels.EnvironmentItemModel,
+	stdInPayload []byte,
+) (int, error) {
 	logLevel := log.GetLevel().String()
 	args := []string{"--loglevel", logLevel, "--path", envstorePth, "run"}
 	args = append(args, cmdArgs...)
 
+	var inReader io.Reader
 	var outWriter io.Writer
 	var errWriter io.Writer
 
@@ -351,21 +377,18 @@ func EnvmanRun(envstorePth, workDirPth string, cmdArgs []string, timeout time.Du
 		outWriter = os.Stdout
 		errWriter = os.Stderr
 	} else {
-		var secretValues []string
-		for _, secret := range secrets {
-			key, value, err := secret.GetKeyValuePair()
-			if err != nil || len(value) < 1 || IsBuiltInFlagTypeKey(key) {
-				continue
-			}
-			secretValues = append(secretValues, value)
-		}
 
-		outWriter = filterwriter.New(secretValues, os.Stdout)
+		outWriter = filterwriter.New(GetSecretValues(secrets), os.Stdout)
 		errWriter = outWriter
 	}
 
+	inReader = os.Stdin
+	if stdInPayload != nil {
+		inReader = bytes.NewReader(stdInPayload)
+	}
+
 	cmd := timeoutcmd.New(workDirPth, "envman", args...)
-	cmd.SetStandardIO(os.Stdin, outWriter, errWriter)
+	cmd.SetStandardIO(inReader, outWriter, errWriter)
 	cmd.SetTimeout(timeout)
 	cmd.AppendEnv("PWD=" + workDirPth)
 
