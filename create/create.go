@@ -1,6 +1,7 @@
 package create
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,7 +9,6 @@ import (
 	"text/template"
 	"time"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
@@ -23,6 +23,9 @@ const (
 	toolkitTypeBash = "bash"
 	toolkitTypeGo   = "go"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 // GoToolkitInventoryModel ...
 type GoToolkitInventoryModel struct {
@@ -371,15 +374,11 @@ func initGitRepoAtPath(dirPth string, remoteURL string) error {
 }
 
 func evaluateTemplate(templatePth string, inventory InventoryModel) (string, error) {
-	templatesBox, err := rice.FindBox("templates")
-	if err != nil {
-		return "", errors.Wrap(err, "Failed to find templates dir/box")
-	}
-
-	templateContent, err := templatesBox.String(templatePth)
+	bytes, err := templates.ReadFile(filepath.Join("templates", templatePth))
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to read %s template", templatePth)
 	}
+	templateContent := string(bytes)
 	evaluatedContent, err := templateutil.EvaluateTemplateStringToString(templateContent, inventory, template.FuncMap{})
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to evaluate template %s", templatePth)
