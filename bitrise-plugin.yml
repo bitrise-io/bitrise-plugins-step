@@ -1,9 +1,9 @@
 name: step
 description: Manage Bitrise CLI steps
 executable:
-  osx: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.9.12/bitrise-plugins-step-Darwin-x86_64
-  osx-arm64: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.9.12/bitrise-plugins-step-Darwin-arm64
-  linux: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.9.12/bitrise-plugins-step-Linux-x86_64
+  osx: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.10.1/bitrise-plugins-step-Darwin-x86_64
+  osx-arm64: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.10.1/bitrise-plugins-step-Darwin-arm64
+  linux: https://github.com/bitrise-io/bitrise-plugins-step/releases/download/0.10.1/bitrise-plugins-step-Linux-x86_64
 trigger: ""
 requirements:
 - tool: bitrise

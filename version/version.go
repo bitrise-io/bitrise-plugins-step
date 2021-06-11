@@ -1,7 +1,7 @@
 package version
 
 // VERSION ...
-const VERSION = "0.9.12"
+const VERSION = "0.10.1"
 
 // BuildNumber ...
 var BuildNumber = ""
