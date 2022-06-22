@@ -1,4 +1,5 @@
-.vscode
 .bitrise*
+.idea
+.vscode
 _bin/*
 _tmp/*
