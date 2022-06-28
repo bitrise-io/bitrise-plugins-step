@@ -42,17 +42,23 @@ support_url: {{ .SupportURL }}
 type_tags:
   - {{ .PrimaryTypeTag }}
 
-is_always_run: false
-is_skippable: false
-run_if: ""
+# These properties define whether a Step is run in a given Workflow or not.
+# You can find more information about this in the documentation here:
+# https://devcenter.bitrise.io/en/steps-and-workflows/developing-your-own-bitrise-step/developing-a-new-step.html#setting-conditions-for-running-the-step
+#
+# is_always_run: false
+# is_skippable: false
+# run_if: ""
 
-deps:
-  brew:
-  - name: git
-  - name: wget
-  apt_get:
-  - name: git
-  - name: wget
+# Use the `deps` property to declare dependencies that you can fetch from an OS dependency manager.
+# You can find more information about this in the documentation here:
+# https://devcenter.bitrise.io/en/steps-and-workflows/developing-your-own-bitrise-step/developing-a-new-step.html#submodules-and-step-dependencies
+#
+# deps:
+#   brew:
+#   - name: cmake
+#   apt_get:
+#   - name: cmake
 
 {{ if eq .ToolkitType "bash" }}
 toolkit:
