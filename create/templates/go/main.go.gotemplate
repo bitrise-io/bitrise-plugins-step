@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/bitrise-io/go-utils/v2/log"
 )
 
 func main() {
-	fmt.Println("This is the value specified for the input 'example_step_input':", os.Getenv("example_step_input"))
+	log.NewLogger().Printf("This is the value specified for the input 'example_step_input':", os.Getenv("example_step_input"))
 
 	//
 	// --- Step Outputs: Export Environment Variables for other Steps:
