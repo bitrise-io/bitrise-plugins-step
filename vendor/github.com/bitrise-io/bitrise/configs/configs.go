@@ -31,6 +31,8 @@ var (
 
 	// IsSecretFiltering ...
 	IsSecretFiltering = false
+	// IsSecretEnvsFiltering ...
+	IsSecretEnvsFiltering = false
 )
 
 // ---------------------------
@@ -45,10 +47,12 @@ const (
 	PullRequestIDEnvKey = "PULL_REQUEST_ID"
 	// DebugModeEnvKey ...
 	DebugModeEnvKey = "DEBUG"
-	// LogLevelEnvKey ...
-	LogLevelEnvKey = "LOGLEVEL"
 	// IsSecretFilteringKey ...
 	IsSecretFilteringKey = "BITRISE_SECRET_FILTERING"
+	// IsSecretEnvsFilteringKey ...
+	IsSecretEnvsFilteringKey = "BITRISE_SECRET_ENVS_FILTERING"
+	// NoOutputTimeoutEnvKey ...
+	NoOutputTimeoutEnvKey = "BITRISE_NO_OUTPUT_TIMEOUT"
 
 	// --- Debug Options
 
