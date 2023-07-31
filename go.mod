@@ -4,11 +4,11 @@ go 1.18
 
 require (
 	github.com/bitrise-io/bitrise v0.0.0-20230707121919-a5b9e2d27ea9
-	github.com/bitrise-io/envman v0.0.0-20230330151556-11e5bde91b36
-	github.com/bitrise-io/go-utils v1.0.8
+	github.com/bitrise-io/envman v0.0.0-20230721122944-6b164ed0c2f8
+	github.com/bitrise-io/go-utils v1.0.9
 	github.com/bitrise-io/goinp v0.0.0-20221102135900-f70828d4ba74
 	github.com/bitrise-io/gows v0.0.0-20220531144754-6f5657a0dd7c
-	github.com/bitrise-io/stepman v0.0.0-20221010110437-a88e9a915b58
+	github.com/bitrise-io/stepman v0.0.0-20230728094915-939f0fe5c19a
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
@@ -20,7 +20,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
-	github.com/hashicorp/go-version v1.4.0 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
