@@ -1,94 +1,40 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
-app:
-  envs:
-  - BIN_NAME: bitrise-plugins-step
-
 workflows:
-  # ----------------------------------------------------------------
-  # --- workflows for CI and testing
   test:
     steps:
-    - go-list: { }
-    - golint: { }
-    - errcheck: { }
-    - go-test: { }
+    - go-list: {}
+    - golint: {}
+    - errcheck: {}
+    - go-test: {}
 
-  # ----------------------------------------------------------------
-  # --- workflows for Utility
-  install:
+  create-release:
+    description: Creates Linux and Darwin binaries, then publishes a GitHub release
+    envs:
+    - GITHUB_TOKEN: $GIT_BOT_USER_ACCESS_TOKEN # Goreleaser expects this env var
     steps:
     - script:
-        title: Embed templates and go install
+        title: Goreleaser (create binaries + publish to GH)
+        deps:
+          brew:
+          - name: goreleaser
         inputs:
-        - content: |-
-            #!/bin/bash
+        - content: |
+            #!/usr/bin/env bash
             set -ex
+            goreleaser release
 
-            go install
-
-  create_binaries:
+  test-binary-build:
+    description: Tests the release build process by creating a snapshot release (without publishing)
     steps:
     - script:
-        title: create Linux and macOS (Darwin) bins, with version infos
+        title: Goreleaser (create snapshot binaries)
+        deps:
+          brew:
+          - name: goreleaser
         inputs:
-        - content: |-
-            #!/bin/bash
-            set -e
-
-            echo
-            echo "Create release binaries"
-            echo " * Build number: $BITRISE_BUILD_NUMBER"
-            echo
-
-            set -x
-
-            git_commit_hash="$(git rev-parse HEAD)"
-            version_package="github.com/bitrise-io/bitrise-plugins-step/version"
-
-            export ARCH=x86_64
-            export GOARCH=amd64
-
-
-            # Create Darwin bin
-            export OS=Darwin
-            export GOOS=darwin
-            binary_path="_bin/${BIN_NAME}-${OS}-${ARCH}"
-
-            go build \
-              -ldflags "-X ${version_package}.BuildNumber=${BITRISE_BUILD_NUMBER} -X ${version_package}.Commit=${git_commit_hash}" \
-              -o "${binary_path}"
-
-            cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
-            envman add --key OSX_BIN_NAME --value "${BIN_NAME}-${OS}-${ARCH}"
-
-
-            # Create Linux binary
-            export OS=Linux
-            export GOOS=linux
-            binary_path="_bin/${BIN_NAME}-${OS}-${ARCH}"
-
-            go build \
-              -ldflags "-X ${version_package}.BuildNumber=${BITRISE_BUILD_NUMBER} -X ${version_package}.Commit=${git_commit_hash}" \
-              -o "${binary_path}"
-
-            cp "${binary_path}" "${BITRISE_DEPLOY_DIR}/${BIN_NAME}-${OS}-${ARCH}"
-            envman add --key LINUX_BIN_NAME --value "${BIN_NAME}-${OS}-${ARCH}"
-
-  update_plugin_defintion:
-    steps:
-    - script:
-        title: Create binaries
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -e
-
-            go get github.com/bitrise-io/go-utils/fileutil
-
-            go run _scripts/set_version.go \
-              --src "https://github.com/bitrise-io/bitrise-plugins-step" \
-              --version "$RELEASE_VERSION" \
-              --osx_bin "$OSX_BIN_NAME" \
-              --linux_bin "$LINUX_BIN_NAME"
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            goreleaser release --snapshot --clean
