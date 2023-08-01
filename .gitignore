@@ -3,3 +3,4 @@
 .vscode
 _bin/*
 _tmp/*
+dist/
