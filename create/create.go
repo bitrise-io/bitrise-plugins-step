@@ -13,7 +13,7 @@ import (
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/bitrise-io/go-utils/templateutil"
+	"github.com/bitrise-io/go-utils/v2/templateutil"
 	"github.com/bitrise-io/goinp/goinp"
 	"github.com/bitrise-io/gows/goutil"
 	"github.com/pkg/errors"
