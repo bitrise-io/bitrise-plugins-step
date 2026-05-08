@@ -266,10 +266,8 @@ func createStep(inventory InventoryModel, stepDirAbsPth string) error {
 	fmt.Println()
 
 	printInfoLine("Creating Step directory at:", stepDirAbsPth)
-	if exists, err := pathutil.IsPathExists(stepDirAbsPth); err != nil {
-		return errors.Wrap(err, "Failed to check whether step dir already exists")
-	} else if exists {
-		return errors.Errorf("Directory (%s) already exists!", stepDirAbsPth)
+	if entries, err := os.ReadDir(stepDirAbsPth); err == nil && len(entries) > 0 {
+		return errors.Errorf("Directory (%s) already exists and is not empty!", stepDirAbsPth)
 	}
 	if err := os.MkdirAll(stepDirAbsPth, 0755); err != nil {
 		return errors.Wrap(err, "Failed to create step directory")
