@@ -208,7 +208,22 @@ func Step() error {
 		}
 	}
 
-	return createStep(inventoryForCreateStep)
+	stepDirAbsPth, err := defaultStepDir(inventoryForCreateStep)
+	if err != nil {
+		return errors.Wrap(err, "Failed to determine default step directory")
+	}
+	fmt.Println()
+	fmt.Println("Where should the step directory be created?")
+	customDir, err := goinp.AskForStringWithDefault(colorstring.Green("Step directory"), stepDirAbsPth)
+	if err != nil {
+		return errors.Wrap(err, "Failed to determine step directory")
+	}
+	stepDirAbsPth, err = pathutil.AbsPath(customDir)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get absolute path for step directory (%s)", customDir)
+	}
+
+	return createStep(inventoryForCreateStep, stepDirAbsPth)
 }
 
 func readAuthorFromGitConfig() string {
@@ -243,34 +258,12 @@ func stepDirAndRepoNameFromID(stepID string) string {
 	return "bitrise-step-" + stepID
 }
 
-func createStep(inventory InventoryModel) error {
+func defaultStepDir(inventory InventoryModel) (string, error) {
+	return pathutil.AbsPath(stepDirAndRepoNameFromID(inventory.ID))
+}
+
+func createStep(inventory InventoryModel, stepDirAbsPth string) error {
 	fmt.Println()
-
-	// create directory
-	stepDirAbsPth := ""
-	if inventory.ToolkitType == toolkitTypeBash {
-		baseDirPath := stepDirAndRepoNameFromID(inventory.ID)
-		absPth, err := pathutil.AbsPath(baseDirPath)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to get absolute path for step directory (%s)", baseDirPath)
-		}
-		stepDirAbsPth = absPth
-	} else if inventory.ToolkitType == toolkitTypeGo {
-		gopath := os.Getenv("GOPATH")
-		if len(gopath) < 1 {
-			// no GOPATH env set - use "${HOME}/go", which is the default GOPATH since Go 1.8
-			gopath = filepath.Join(pathutil.UserHomeDir(), "go")
-		}
-		baseDirPath := filepath.Join(gopath, "src", inventory.GoToolkitInventory.PackageID)
-
-		absPth, err := pathutil.AbsPath(baseDirPath)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to get absolute path for step directory (%s)", baseDirPath)
-		}
-		stepDirAbsPth = absPth
-	} else {
-		return errors.Errorf("Invalid Toolkit Type: %s", inventory.ToolkitType)
-	}
 
 	printInfoLine("Creating Step directory at:", stepDirAbsPth)
 	if exists, err := pathutil.IsPathExists(stepDirAbsPth); err != nil {

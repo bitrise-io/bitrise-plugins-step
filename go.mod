@@ -1,6 +1,6 @@
 module github.com/bitrise-io/bitrise-plugins-step
 
-go 1.18
+go 1.23
 
 require (
 	github.com/bitrise-io/bitrise v0.0.0-20230707121919-a5b9e2d27ea9
