@@ -46,16 +46,16 @@ type SpecJSONModel struct {
 func ReadStepCollectionModel(collectionID string) (models.StepCollectionModel, error) {
 	specJSONPath, err := specJSONPathOfCollection(collectionID)
 	if err != nil {
-		return models.StepCollectionModel{}, fmt.Errorf("Failed to get spec json path: %s", err)
+		return models.StepCollectionModel{}, fmt.Errorf("failed to get spec json path: %s", err)
 	}
 
 	file, err := os.Open(specJSONPath)
 	if err != nil {
-		return models.StepCollectionModel{}, fmt.Errorf("Failed to open spec json: %s", err)
+		return models.StepCollectionModel{}, fmt.Errorf("failed to open spec json: %s", err)
 	}
 	var spec models.StepCollectionModel
 	if err := json.NewDecoder(file).Decode(&spec); err != nil {
-		return models.StepCollectionModel{}, fmt.Errorf("Failed to parse spec json: %s", err)
+		return models.StepCollectionModel{}, fmt.Errorf("failed to parse spec json: %s", err)
 	}
 	return spec, nil
 }
@@ -66,21 +66,21 @@ func ReadStepCollectionModel(collectionID string) (models.StepCollectionModel, e
 func ReadStepVersionInfo(collectionID, stepID, stepVersion string) (StepVersionModel, string, error) {
 	specJSONPath, err := specJSONPathOfCollection(collectionID)
 	if err != nil {
-		return StepVersionModel{}, "", fmt.Errorf("Failed to get spec json path: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("failed to get spec json path: %s", err)
 	}
 
 	file, err := os.Open(specJSONPath)
 	if err != nil {
-		return StepVersionModel{}, "", fmt.Errorf("Failed to open spec json: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("failed to open spec json: %s", err)
 	}
 	var spec SpecJSONModel
 	if err := json.NewDecoder(file).Decode(&spec); err != nil {
-		return StepVersionModel{}, "", fmt.Errorf("Failed to parse spec json: %s", err)
+		return StepVersionModel{}, "", fmt.Errorf("failed to parse spec json: %s", err)
 	}
 
 	stepInfo, isFound := spec.Steps[stepID]
 	if !isFound {
-		return StepVersionModel{}, "", fmt.Errorf("No Step found for ID: %s", stepID)
+		return StepVersionModel{}, "", fmt.Errorf("no step found for ID: %s", stepID)
 	}
 
 	if stepVersion == "" {
@@ -89,7 +89,7 @@ func ReadStepVersionInfo(collectionID, stepID, stepVersion string) (StepVersionM
 
 	stepVersionInfo, isFound := stepInfo.StepVersions[stepVersion]
 	if !isFound {
-		return StepVersionModel{}, "", fmt.Errorf("No Step version found for (ID: %s) (version: %s)", stepID, stepVersion)
+		return StepVersionModel{}, "", fmt.Errorf("no step version found for (ID: %s) (version: %s)", stepID, stepVersion)
 	}
 
 	return stepVersionInfo, stepVersion, nil
@@ -98,26 +98,26 @@ func ReadStepVersionInfo(collectionID, stepID, stepVersion string) (StepVersionM
 func specJSONPathOfCollection(collectionID string) (string, error) {
 	routesAbsPath, err := pathutil.AbsPath(stepmanRoutesPath)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get absolut path for stepman routing file: %s", err)
+		return "", fmt.Errorf("failed to get absolute path for stepman routing file: %s", err)
 	}
 	bytes, err := fileutil.ReadBytesFromFile(routesAbsPath)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read content of routing file: %s", err)
+		return "", fmt.Errorf("failed to read content of routing file: %s", err)
 	}
 	var routeMap map[string]string
 	if err := json.Unmarshal(bytes, &routeMap); err != nil {
-		return "", fmt.Errorf("Failed to parse content of routing file: %s", err)
+		return "", fmt.Errorf("failed to parse content of routing file: %s", err)
 	}
 
 	val, isFound := routeMap[collectionID]
 	if !isFound {
-		return "", fmt.Errorf("Specified collection (%s) not found in routing", collectionID)
+		return "", fmt.Errorf("specified collection (%s) not found in routing", collectionID)
 	}
 
 	specPath := fmt.Sprintf("~/.stepman/step_collections/%s/spec/spec.json", val)
 	absSpecJSONPath, err := pathutil.AbsPath(specPath)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get absolute path of spec.json")
+		return "", fmt.Errorf("failed to get absolute path of spec.json")
 	}
 
 	return absSpecJSONPath, nil

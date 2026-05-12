@@ -5,8 +5,16 @@ workflows:
   test:
     steps:
     - go-list: {}
-    - golint: {}
-    - errcheck: {}
+    - script:
+        title: golangci-lint
+        deps:
+          brew:
+          - name: golangci-lint
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            golangci-lint run ./...
     - go-test: {}
 
   create-release:
