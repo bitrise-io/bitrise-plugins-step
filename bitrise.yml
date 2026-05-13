@@ -5,8 +5,15 @@ workflows:
   test:
     steps:
     - go-list: {}
-    - golint: {}
-    - errcheck: {}
+    - script:
+        title: golangci-lint
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+            export PATH="$(go env GOPATH)/bin:$PATH"
+            golangci-lint run ./...
     - go-test: {}
 
   create-release:

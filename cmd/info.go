@@ -34,10 +34,10 @@ var infoCmd = &cobra.Command{
 
 		// by Step ID
 		if len(args) < 1 {
-			return errors.New("No step ID specified as a parameter")
+			return errors.New("no step ID specified as a parameter")
 		}
 		if len(args) > 1 {
-			return fmt.Errorf("More than one step ID specified: %s", args)
+			return fmt.Errorf("more than one step ID specified: %s", args)
 		}
 		stepID := args[0]
 
@@ -48,12 +48,12 @@ var infoCmd = &cobra.Command{
 func printStepInfoFromStepYML(ymlPth string) error {
 	step, err := stepman.ParseStepDefinition(ymlPth, false)
 	if err != nil {
-		return fmt.Errorf("Failed to parse step.yml (path: %s), error: %s", ymlPth, err)
+		return fmt.Errorf("failed to parse step.yml (path: %s), error: %s", ymlPth, err)
 	}
 
 	// inputs, err := getEnvInfos(step.Inputs)
 	// if err != nil {
-	// 	return fmt.Errorf("Failed to get step input infos, err: %s", err)
+	// 	return fmt.Errorf("failed to get step input infos, err: %s", err)
 	// }
 
 	// outputs, err := getEnvInfos(step.Outputs)
@@ -83,22 +83,22 @@ func printStepInfoFromLibrary(stepID string) error {
 	_, stepVersion, err := stepmanutil.ReadStepVersionInfo(collectionID, stepID, stepVersion)
 
 	if err != nil {
-		return fmt.Errorf("Failed to get step info: %s", err)
+		return fmt.Errorf("failed to get step info: %s", err)
 	}
 
 	step, err := stepman.ReadStepVersionInfo(collectionID, stepID, stepVersion)
 	if err != nil {
-		return fmt.Errorf("Failed to read step version info: %s", err)
+		return fmt.Errorf("failed to read step version info: %s", err)
 	}
 
 	collection, err := stepman.ReadStepSpec(collectionID)
 	if err != nil {
-		return fmt.Errorf("Failed to read step lib (%s), error: %s", collectionID, err)
+		return fmt.Errorf("failed to read step lib (%s), error: %s", collectionID, err)
 	}
 
 	latestStepVersion, err := collection.GetLatestStepVersion(stepID)
 	if err != nil {
-		return fmt.Errorf("Failed to get latest version of step (id:%s)", stepID)
+		return fmt.Errorf("failed to get latest version of step (id:%s)", stepID)
 	}
 
 	if stepVersion == "" {
@@ -131,13 +131,13 @@ func printStepInfoFromLibrary(stepID string) error {
 
 	route, found := stepman.ReadRoute(collectionID)
 	if !found {
-		return fmt.Errorf("No route found for collection: %s", collectionID)
+		return fmt.Errorf("no route found for collection: %s", collectionID)
 	}
 	globalStepInfoPth := stepman.GetStepGlobalInfoPath(route, stepID)
 	if globalStepInfoPth != "" {
 		globalInfo, found, err := stepman.ParseStepGroupInfoModel(globalStepInfoPth)
 		if err != nil {
-			return fmt.Errorf("Failed to get step (path:%s) output infos, err: %s", globalStepInfoPth, err)
+			return fmt.Errorf("failed to get step (path:%s) output infos, err: %s", globalStepInfoPth, err)
 		}
 
 		if found {
@@ -228,7 +228,7 @@ func printStepVersionInfoOutput(stepVersionInfo models.StepInfoModel) error {
 
 		inputs, err := getEnvInfos(stepVersionInfo.Step.Inputs)
 		if err != nil {
-			return fmt.Errorf("Failed to get step input infos, err: %s", err)
+			return fmt.Errorf("failed to get step input infos, err: %s", err)
 		}
 
 		for _, input := range inputs {

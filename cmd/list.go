@@ -32,23 +32,24 @@ func init() {
 
 func printStepList() error {
 	if collection == "" {
-		return errors.New("No collection defined")
+		return errors.New("no collection defined")
 	}
-	if format == "" || format == output.FormatRaw {
+	switch format {
+	case "", output.FormatRaw:
 		out, err := tools.StepmanRawStepList(collection)
 		if err != nil {
-			return fmt.Errorf("Failed to print step list, err: %s", err)
+			return fmt.Errorf("failed to print step list, err: %s", err)
 		}
 		fmt.Println("Step list:")
 		fmt.Println(out)
-	} else if format == output.FormatJSON {
+	case output.FormatJSON:
 		out, err := tools.StepmanJSONStepList(collection)
 		if err != nil {
-			return fmt.Errorf("Failed to print step list, err: %s", err)
+			return fmt.Errorf("failed to print step list, err: %s", err)
 		}
 		fmt.Println(out)
-	} else {
-		return fmt.Errorf("Invalid format: %s", format)
+	default:
+		return fmt.Errorf("invalid format: %s", format)
 	}
 	return nil
 }

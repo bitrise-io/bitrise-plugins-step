@@ -1,10 +1,24 @@
 package create
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func Test_defaultStepDir(t *testing.T) {
+	inv := InventoryModel{ID: "my-step"}
+	got, err := defaultStepDir(inv)
+	require.NoError(t, err)
+	require.Contains(t, got, "bitrise-step-my-step")
+	require.True(t, filepath.IsAbs(got))
+}
+
+func Test_stepDirAndRepoNameFromID(t *testing.T) {
+	require.Equal(t, "bitrise-step-hello", stepDirAndRepoNameFromID("hello"))
+	require.Equal(t, "bitrise-step-my-step", stepDirAndRepoNameFromID("my-step"))
+}
 
 func Test_generateIDFromString(t *testing.T) {
 	require.Equal(t, "a-simple-test", generateIDFromString("a-simple-test"))
