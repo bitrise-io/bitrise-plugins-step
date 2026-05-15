@@ -30,7 +30,6 @@ workflows:
         - content: |
             #!/usr/bin/env bash
             set -ex
-            npm i -g @goreleaser/goreleaser
             goreleaser release
 
   test-binary-build:
