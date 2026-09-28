@@ -1,33 +1,55 @@
-format_version: "11"
+format_version: "13"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+# Applies to every workflow below, release included. The CLI installs this before the first
+# step, so it replaces both the .tool-versions pin and an explicit `asdf install` step.
+tools:
+  golang: 1.26.3
 
 workflows:
   test:
     steps:
-    - go-list: {}
-    - script:
+    - script@1:
+        title: yamlfmt
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            set -x
+            # .goreleaser.yml is excluded: yamlfmt mangles its folded name_template scalar
+            go run github.com/google/yamlfmt/cmd/yamlfmt@v0.21.0 -lint -conf .ymlfmt -match_type doublestar -exclude "_tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**,.goreleaser.yml" '**/*.yml'
+    - script@1:
         title: golangci-lint
         inputs:
-        - content: |
-            #!/usr/bin/env bash
-            set -ex
-            go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-            export PATH="$(go env GOPATH)/bin:$PATH"
-            golangci-lint run ./...
-    - go-test: {}
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            set -x
+            curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.13.2
+            ./bin/golangci-lint run --timeout 5m --color always --config .golangci.yml
+    - script@1:
+        title: go build & test
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -exo pipefail
+
+            go version
+            go build ./...
+            go test -v ./...
 
   create-release:
     description: Creates Linux and Darwin binaries, then publishes a GitHub release
     envs:
     - GITHUB_TOKEN: $GIT_BOT_USER_ACCESS_TOKEN # Goreleaser expects this env var
     steps:
-    - script:
+    - script@1:
         title: Goreleaser (create binaries + publish to GH)
         deps:
           brew:
           - name: goreleaser
         inputs:
-        - content: |
+        - content: |-
             #!/usr/bin/env bash
             set -ex
             goreleaser release
@@ -35,13 +57,13 @@ workflows:
   test-binary-build:
     description: Tests the release build process by creating a snapshot release (without publishing)
     steps:
-    - script:
+    - script@1:
         title: Goreleaser (create snapshot binaries)
         deps:
           brew:
           - name: goreleaser
         inputs:
-        - content: |
+        - content: |-
             #!/usr/bin/env bash
             set -ex
             goreleaser release --snapshot --clean
