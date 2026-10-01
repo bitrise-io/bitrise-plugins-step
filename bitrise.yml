@@ -1,33 +1,67 @@
-format_version: "11"
+format_version: "13"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  # Workaround for STEP-2566. When `go version` fails at the start of a bitrise run — which
+  # the pin below causes until setup-go has run — the CLI's Go toolkit Bootstrap sets GOROOT
+  # process-wide to a directory it never created, and every later step inherits it. An empty
+  # value lets the asdf-installed Go derive its own. Remove once STEP-2566 is fixed.
+  - GOROOT: ""
+
+step_bundles:
+  setup-go:
+    steps:
+    - script@1:
+        title: Setup pinned Go version
+        inputs:
+        - content: asdf install
 
 workflows:
   test:
     steps:
-    - go-list: {}
-    - script:
+    - bundle::setup-go: {}
+    - script@1:
+        title: yamlfmt
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            set -x
+            # .goreleaser.yml is excluded: yamlfmt mangles its folded name_template scalar
+            go run github.com/google/yamlfmt/cmd/yamlfmt@v0.21.0 -lint -conf .ymlfmt -match_type doublestar -exclude "_tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**,.goreleaser.yml" '**/*.yml'
+    - script@1:
         title: golangci-lint
         inputs:
-        - content: |
-            #!/usr/bin/env bash
-            set -ex
-            go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-            export PATH="$(go env GOPATH)/bin:$PATH"
-            golangci-lint run ./...
-    - go-test: {}
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            set -x
+            curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.13.2
+            ./bin/golangci-lint run --timeout 5m --color always --config .golangci.yml
+    - script@1:
+        title: go build & test
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -exo pipefail
+
+            go build ./...
+            go test -v ./...
 
   create-release:
     description: Creates Linux and Darwin binaries, then publishes a GitHub release
     envs:
     - GITHUB_TOKEN: $GIT_BOT_USER_ACCESS_TOKEN # Goreleaser expects this env var
     steps:
-    - script:
+    - bundle::setup-go: {}
+    - script@1:
         title: Goreleaser (create binaries + publish to GH)
         deps:
           brew:
           - name: goreleaser
         inputs:
-        - content: |
+        - content: |-
             #!/usr/bin/env bash
             set -ex
             goreleaser release
@@ -35,13 +69,14 @@ workflows:
   test-binary-build:
     description: Tests the release build process by creating a snapshot release (without publishing)
     steps:
-    - script:
+    - bundle::setup-go: {}
+    - script@1:
         title: Goreleaser (create snapshot binaries)
         deps:
           brew:
           - name: goreleaser
         inputs:
-        - content: |
+        - content: |-
             #!/usr/bin/env bash
             set -ex
             goreleaser release --snapshot --clean
